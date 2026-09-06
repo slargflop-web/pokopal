@@ -366,7 +366,7 @@
     .sheet { inset: 0; margin: auto; width: 440px; max-height: 80vh; border-radius: 20px; }
   }
 
-  /* ---------- shared board (phase 3) ---------- */
+  /* ---------- accounts and the online board (phase 3) ---------- */
   .sync {
     flex: none; align-self: center; margin-left: 2px;
     width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%;
@@ -409,6 +409,16 @@
   .steps { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); line-height: 1.4; }
   .steps li + li { margin-top: 3px; }
   .act:disabled { opacity: 0.55; cursor: default; }
+  .field {
+    width: 100%; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--ground); color: var(--ink); font: inherit; font-size: 16px;
+    outline: none; -webkit-appearance: none; appearance: none;
+  }
+  .field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .hint.err { color: #B3261E; font-weight: 600; }
+  .hint.ok { color: #2E9E5B; font-weight: 600; }
+  .nudge { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+  .nudge .sub { padding: 2px 0; font-size: 13px; }
 
   /* ---------- wide layout ---------- */
   @media (min-width: 860px) {
@@ -468,6 +478,7 @@
   <section class="pane bank" id="bank" data-target="bank">
     <div class="pane-head"><span>Not placed yet</span><span class="count" id="bankCount">0</span></div>
     <div class="firstrun" id="firstrun" hidden>Press and hold a Pokémon, then drag it onto the town it lives in. Or tap it, then tap the town.</div>
+    <div class="firstrun nudge" id="nudge" hidden><span>Save your board to an account and share it with another phone.</span><button class="sub" id="nudgeBtn" type="button">Create an account</button><button class="sub" id="nudgeNo" type="button">Not now</button></div>
     <div class="cards" id="bankCards"></div>
     <div class="empty" id="bankEmpty" hidden></div>
   </section>
@@ -480,13 +491,14 @@
 <dialog class="sheet" id="sheet" aria-label="PokoPal menu">
   <div class="sheet-head"><img class="mark" src="icons/pokopal-mark.png" alt="" width="22" height="22"><span>PokoPal</span><button class="x" id="sheetClose" type="button" aria-label="Close">×</button></div>
   <div class="sheet-body">
-    <div class="share" id="shareBox" hidden>
-      <div class="share-head"><span>Shared board</span><span class="state" id="shareState">…</span></div>
-      <div class="share-sub" id="shareSub"></div>
-      <div class="subrow"><button class="sub" id="showCodeBtn" type="button">Show the code</button><button class="sub" id="stopShareBtn" type="button">Stop sharing</button></div>
+    <div class="share" id="accountBox" hidden>
+      <div class="share-head"><span id="accountWho">Signed in</span><span class="state" id="accountState">…</span></div>
+      <div class="share-sub" id="accountSub"></div>
+      <div class="subrow"><button class="sub" id="shareBoardBtn" type="button">Share this board</button><button class="sub" id="joinBoardBtn" type="button">Join with a code</button></div>
+      <div class="subrow"><button class="sub" id="renameBoardBtn" type="button">Rename board</button><button class="sub" id="leaveBoardBtn" type="button">Leave board</button><button class="sub" id="signOutBtn" type="button">Sign out</button></div>
     </div>
-    <button class="act" id="shareBtn" type="button"><b>Share with another phone</b><span id="shareHow">Both phones show the same board. You get a code to text; the other phone enters it.</span></button>
-    <div class="subrow" id="joinRow"><button class="sub" id="joinBtn" type="button">Have a code? Join a shared board</button></div>
+    <button class="act" id="signInBtn" type="button"><b>Sign in or create an account</b><span id="signInHow">Saves your board online, opens it on any phone, and lets you share it with someone.</span></button>
+    <div class="subrow" id="joinRow"><button class="sub" id="joinBtn" type="button">Have a code? Join a board</button></div>
     <button class="act" id="backupBtn" type="button"><b>Back up</b><span>Saves the board as a small file to keep in Files, AirDrop or text to someone.</span></button>
     <button class="act" id="restoreBtn" type="button"><b>Restore</b><span>Loads a backup file in place of the board. Undo is offered.</span></button>
     <div class="subrow"><button class="sub" id="copyBtn" type="button">Copy backup as text</button><button class="sub" id="pasteBtn" type="button">Paste backup text</button></div>
@@ -506,31 +518,43 @@
   </div>
 </dialog>
 
-<dialog class="sheet" id="shareDlg" aria-label="Shared board">
-  <div class="sheet-head"><span id="shareTitle">Share with another phone</span><button class="x" id="shareClose" type="button" aria-label="Close">×</button></div>
+<dialog class="sheet" id="authDlg" aria-label="Sign in">
+  <div class="sheet-head"><span id="authTitle">Sign in</span><button class="x" id="authClose" type="button" aria-label="Close">×</button></div>
+  <form class="sheet-body stack" id="authForm" novalidate>
+    <p class="hint" id="authHint">Your board is saved to your account and opens on any phone you sign in on.</p>
+    <input class="field" id="authName" type="text" placeholder="Your name (shown to people you share with)" autocomplete="name" autocapitalize="words" hidden>
+    <input class="field" id="authEmail" type="email" placeholder="Email" autocomplete="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <input class="field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+    <p class="hint err" id="authError" hidden></p>
+    <button class="act primary" id="authGo" type="submit"><b id="authGoLabel">Sign in</b></button>
+    <div class="subrow"><button class="sub" id="authToggle" type="button">Create an account</button><button class="sub" id="authForgot" type="button">Forgot password?</button></div>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="shareDlg" aria-label="Share this board">
+  <div class="sheet-head"><span id="shareTitle">Share this board</span><button class="x" id="shareClose" type="button" aria-label="Close">×</button></div>
   <div class="sheet-body">
     <div class="stack" id="showPane">
-      <p class="hint">Send this code to the other phone. Anyone with it can see and change the board, so keep it between you.</p>
+      <p class="hint">Anyone who signs in to PokoPal and enters this code joins your board and can change it, so keep it between you.</p>
       <div class="code" id="codeText"></div>
       <button class="act primary" id="sendCodeBtn" type="button"><b>Send the code</b></button>
-      <div class="subrow"><button class="sub" id="copyCodeBtn" type="button">Copy the code</button><button class="sub" id="copyLinkBtn" type="button">Copy a link</button></div>
+      <div class="subrow"><button class="sub" id="copyCodeBtn" type="button">Copy the code</button><button class="sub" id="copyLinkBtn" type="button">Copy a link</button><button class="sub" id="newCodeBtn" type="button">New code</button></div>
       <ol class="steps">
-        <li>On the other phone, open PokoPal.</li>
-        <li>Tap ⋯, then “Have a code? Join a shared board”.</li>
-        <li>Paste the code and tap Join. The two boards combine, and from then on every move shows on both phones.</li>
+        <li>On the other phone, open PokoPal and sign in, or create an account.</li>
+        <li>Tap ⋯, then “Have a code? Join a board”.</li>
+        <li>Paste the code and tap Join. The two boards combine, and from then on every move shows on every phone on the board.</li>
       </ol>
     </div>
     <div class="stack" id="joinPane">
-      <p class="hint">Paste the code from the other phone.</p>
-      <input id="codeInput" type="text" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+      <p class="hint">Paste the code you were sent.</p>
+      <input id="codeInput" type="text" placeholder="XXXX-XXXX" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
       <button class="act primary" id="joinGoBtn" type="button"><b>Join</b></button>
-      <p class="hint" id="joinNote" hidden></p>
     </div>
   </div>
 </dialog>
 
 <!--#data-->
-<script src="sync.js"></script>
+<script src="cloud.js"></script>
 <script>
 (() => {
 'use strict';
@@ -568,7 +592,7 @@ const CARD = new Map();         // id -> card element
 const TOWN_CARDS = new Map();   // townId -> cards container
 const TOWN_EL = new Map();      // townId -> .town element
 const TILE = new Map();         // 'bank' | townId -> tile element
-let state = { placements: {}, stamps: {}, folded: {}, view: 'bank', placedOnce: false };   // stamps: id -> ms of its last move (phase 3)
+let state = { placements: {}, stamps: {}, folded: {}, view: 'bank', placedOnce: false, cloud: { uid: null } };   // stamps: id -> ms of its last move; cloud.uid: whose account this phone's board belongs to (phase 3)
 let filter = { q: '', type: '' };
 let selected = null;
 let lastMove = null;
@@ -594,13 +618,15 @@ function load() {
         const at = Date.parse(s.updatedAt) || Date.now();
         for (const id of Object.keys(state.placements)) state.stamps[id] = at;
       }
+      state.cloud = (s.cloud && typeof s.cloud === 'object') ? { uid: s.cloud.uid || null } : { uid: null };
+      state.nudgeDismissed = !!s.nudgeDismissed;
     }
   } catch (e) { /* storage unavailable or corrupt: start empty */ }
 }
 function save() {
   try { state.updatedAt = new Date().toISOString(); localStorage.setItem(KEY, JSON.stringify(state)); }
   catch (e) { /* private mode or quota: the board still works for this session */ }
-  if (sync) sync.schedule();   // shared board: send this change (a moment later, so a run of moves goes as one)
+  if (cloud) cloud.schedule();   // signed in: save this change online (a moment later, so a run of moves goes as one)
 }
 
 // ---------- data ----------
@@ -609,9 +635,9 @@ async function loadData() {
   const [t, p, s] = await Promise.all([
     fetch('data/towns.json').then(r => r.json()),
     fetch('data/pokemon.json').then(r => r.json()),
-    fetch('data/sync.json').then(r => (r.ok ? r.json() : null)).catch(() => null),   // optional: without it, sharing is off
+    fetch('data/auth.json').then(r => (r.ok ? r.json() : null)).catch(() => null),   // optional: without it, accounts are off
   ]);
-  return { towns: t.towns, pokemon: p.pokemon, sync: s };
+  return { towns: t.towns, pokemon: p.pokemon, auth: s };
 }
 
 // ---------- building the board ----------
@@ -1018,7 +1044,7 @@ function restoreFromText(text) {
   const when = b.exportedAt ? new Date(b.exportedAt) : null;
   const whenText = when && !isNaN(when)
     ? `, saved ${when.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}` : '';
-  if (!confirm(`Replace the board with this backup (${b.known} placed${whenText})?${share ? ' It replaces the shared board on both phones.' : ''}`)) return false;
+  if (!confirm(`Replace the board with this backup (${b.known} placed${whenText})?${sharedBoard() ? ' It replaces the board for everyone on it.' : ''}`)) return false;
   const before = applyPlacements(b.placements);
   closeSheets();
   const extra = b.extra ? ` (+${b.extra} for Pokémon or towns this version does not have yet)` : '';
@@ -1028,15 +1054,15 @@ function restoreFromText(text) {
 function clearBoard() {
   const n = placedCount();
   if (!n) { showStatus('The board is already empty', null, null, 2000); return; }
-  if (!confirm(`Send all ${n} placed Pokémon back to Not placed?${share ? ' This clears the shared board on both phones.' : ''}`)) return;
+  if (!confirm(`Send all ${n} placed Pokémon back to Not placed?${sharedBoard() ? ' This clears the board for everyone on it.' : ''}`)) return;
   const before = applyPlacements({});
   closeSheets();
   showStatus(`Cleared ${n} placements`, 'Undo', () => { applyPlacements(before); hideStatus(); }, 8000);
 }
 
 function showDialog(d) { if (d.open) return; if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
-function openSheet() { updateInstallRow(); renderSync(); renderAbout(); showDialog($('sheet')); }
-function closeSheets() { for (const id of ['sheet', 'textDlg', 'shareDlg']) { const d = $(id); if (d.open) d.close(); } }
+function openSheet() { updateInstallRow(); renderAccount(); renderAbout(); showDialog($('sheet')); }
+function closeSheets() { for (const id of ['sheet', 'textDlg', 'shareDlg', 'authDlg']) { const d = $(id); if (d.open) d.close(); } }
 function openText(mode) {
   textMode = mode;
   const ta = $('textArea');
@@ -1087,7 +1113,7 @@ function renderAbout() {
       : `Saving pictures for offline use: ${offlineInfo.cached} of ${offlineInfo.total}`);
   } else if (window.POKOPIA_DATA) parts.push('Single-file edition: everything is inside this page.');
   else if (navigator.serviceWorker && navigator.serviceWorker.controller) parts.push('Preparing the offline copy…');
-  if (share) parts.push(syncStatus ? `Shared board · ${syncStatus.open} of ${syncStatus.relays} relays · ${syncLabel(syncStatus)}` : 'Shared board · starting');
+  if (signedIn()) parts.push(`Account ${cloudStatus.user.email}${cloudStatus.board ? ` · board “${cloudStatus.board.name}” · ${cloudStatus.board.members.length} ${cloudStatus.board.members.length === 1 ? 'person' : 'people'}` : ''} · ${accountLabel(cloudStatus)}`);
   $('about').textContent = parts.join('\n');
 }
 
@@ -1124,20 +1150,15 @@ function registerSW() {
   }).catch(() => { /* no offline copy; the app still works online */ });
 }
 
-// ---------- shared board (phase 3): one board on two phones ----------
-// The engine is docs/sync.js (window.PokoSync). This side owns the board: it stamps every move, hands the engine the
-// board as { id: [townId or '', stampMs] }, and applies what comes back with the engine's last-change-wins merge.
-const SHARE_KEY = 'pokopal:share';   // { code, deviceId, since, role }: the room this phone is on; not part of the board or its backups
-let share = null, sync = null, syncStatus = null, syncConf = null, joinedJustNow = false;
-
-function loadShare() {
-  try { const s = JSON.parse(localStorage.getItem(SHARE_KEY) || 'null'); if (s && typeof s.code === 'string') share = s; } catch (e) { share = null; }
-}
-function saveShare() {
-  try { if (share) localStorage.setItem(SHARE_KEY, JSON.stringify(share)); else localStorage.removeItem(SHARE_KEY); } catch (e) {}
-}
-function newDeviceId() { try { return crypto.randomUUID(); } catch (e) { return Math.random().toString(36).slice(2) + Date.now().toString(36); } }
-const canShare = () => !!(window.PokoSync && syncConf && Array.isArray(syncConf.relays) && syncConf.relays.length);
+// ---------- accounts and the online board (phase 3, September 6, 2026) ----------
+// The engine is docs/cloud.js (window.PokoCloud): sign-in with email and password, and one board document per person
+// or per group, saved online. This side owns the board: it stamps every move, hands the engine the board as
+// { id: [townId or '', stampMs] }, and applies what comes back with the engine's last-change-wins merge. The board
+// stays local-first: it works signed out, and signing in saves it under the account.
+let cloud = null, cloudStatus = null, authConf = null, pendingJoin = null, authMode = 'in', linkHandled = false;
+const accountsReady = () => !!(window.PokoCloud && authConf && authConf.firebase && authConf.firebase.apiKey);
+const signedIn = () => !!(cloudStatus && cloudStatus.user);
+const sharedBoard = () => signedIn() && !!cloudStatus.board && cloudStatus.board.members.length > 1;
 
 function syncEntries() {
   const out = {};
@@ -1147,11 +1168,11 @@ function syncEntries() {
   }
   return out;
 }
-// Takes the other phone's board in; returns how many Pokémon moved here because of it.
+// Takes the online board in; returns how many Pokémon moved here because of it.
 function applyRemoteEntries(entries) {
   const mine = syncEntries();
-  const { merged, changed } = PokoSync.mergeEntries(mine, entries);
-  if (PokoSync.sameEntries(merged, mine)) return 0;
+  const { merged, changed } = PokoCloud.mergeEntries(mine, entries);
+  if (PokoCloud.sameEntries(merged, mine)) return 0;
   const placements = {}, stamps = {};
   for (const [id, [t, at]] of Object.entries(merged)) { stamps[id] = at; if (t) placements[id] = t; }
   for (const [id, t] of Object.entries(state.placements)) if (!(id in stamps) && t) placements[id] = t;   // never drop a placement
@@ -1169,26 +1190,32 @@ function applyRemoteEntries(entries) {
   refresh();
   return changed.length;
 }
-
-function startSync(justJoined) {
-  if (sync) { sync.stop(); sync = null; }
-  syncStatus = null;
-  if (!share || !canShare()) { renderSync(); return; }
-  joinedJustNow = !!justJoined;
-  sync = PokoSync.connect({
-    code: share.code, relays: syncConf.relays, kind: syncConf.kind, tag: syncConf.tag, deviceId: share.deviceId,
+// Another person's account signed in on this phone: their board replaces what was here.
+function replaceLocalBoard() {
+  state.placements = {}; state.stamps = {};
+  for (const card of CARD.values()) if (card.parentElement !== $('bankCards')) insertSorted($('bankCards'), card);
+  save();
+  refresh();
+}
+function startCloud() {
+  if (!accountsReady()) { renderAccount(); return; }
+  cloud = PokoCloud.start({
+    config: authConf,
     getEntries: syncEntries,
     applyRemote: entries => applyRemoteEntries(entries),
-    onRemote: ({ changes }) => {
-      if (joinedJustNow) { joinedJustNow = false; showStatus(`Shared board loaded · ${placedCount()} placed`, null, null, 3000); }
-      else showStatus(`Updated from the other phone (${changes} moved)`, null, null, 3000);
+    getLocalOwner: () => state.cloud.uid || null,
+    setLocalOwner: uid => { if (state.cloud.uid !== uid) { state.cloud.uid = uid; save(); } },
+    replaceLocal: replaceLocalBoard,
+    onStatus: st => {
+      cloudStatus = st;
+      renderAccount();
+      if (!linkHandled && st.state !== 'loading' && st.state !== 'off') { linkHandled = true; handleJoinLink(); }
     },
-    onStatus: st => { syncStatus = st; renderSync(); },
+    onRemote: ({ changes, by }) => showStatus(`${by || 'Someone on your board'} moved ${changes === 1 ? '1 Pokémon' : `${changes} Pokémon`}`, null, null, 3000),
+    onSignedIn: () => { if (pendingJoin) { const c = pendingJoin; pendingJoin = null; doJoin(c); } },
   });
-  sync.schedule(800);
-  renderSync();
+  renderAccount();
 }
-function stopSync() { if (sync) { sync.stop(); sync = null; } syncStatus = null; renderSync(); }
 
 function ago(t) {
   const s = Math.max(0, Math.round((Date.now() - t) / 1000));
@@ -1197,91 +1224,132 @@ function ago(t) {
   if (s < 3600) return `${Math.round(s / 60)} min ago`;
   return new Date(t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
-function syncLabel(st) {
-  if (!share) return '';
+function accountLabel(st) {
   if (!st) return 'Starting…';
   switch (st.state) {
-    case 'synced': { const t = Math.max(st.lastSyncAt || 0, st.lastRemoteAt || 0); return t ? `Synced ${ago(t)}` : 'Synced'; }
-    case 'pending': return 'Sending…';
+    case 'synced': { const t = Math.max(st.lastSyncAt || 0, st.lastRemoteAt || 0); return t ? `Saved ${ago(t)}` : 'Saved'; }
+    case 'pending': return 'Saving…';
     case 'offline': return 'Waiting for signal';
-    case 'error': return 'Could not start';
-    default: return 'Connecting…';
+    case 'starting': return 'Opening your board…';
+    case 'loading': return 'Connecting…';
+    case 'error': return 'Problem';
+    default: return '';
   }
 }
-function renderSync() {
-  const dot = $('syncDot'), box = $('shareBox'), st = syncStatus;
-  const s = share ? (st ? st.state : 'starting') : 'off';
-  dot.hidden = !share;
-  dot.dataset.state = s;
-  dot.title = share ? `Shared board · ${syncLabel(st)}` : '';
-  box.hidden = !share;
-  $('shareBtn').hidden = !!share;
-  $('joinRow').hidden = !!share;
-  if (!canShare()) {
-    $('shareBtn').disabled = true;
-    $('shareHow').textContent = window.PokoSync ? 'Sharing is not available in this copy of PokoPal.' : 'Sharing could not load. Reload PokoPal with a signal and try again.';
-    $('joinRow').hidden = true;
+function renderAccount() {
+  const st = cloudStatus, on = signedIn();
+  const dot = $('syncDot');
+  dot.hidden = !on;
+  if (on) { dot.dataset.state = st.state; dot.title = `Your board · ${accountLabel(st)}`; }
+  $('accountBox').hidden = !on;
+  $('signInBtn').hidden = on;
+  $('joinRow').hidden = on || !accountsReady();
+  const how = $('signInHow'), btn = $('signInBtn');
+  if (!accountsReady()) {
+    btn.disabled = true;
+    how.textContent = window.PokoCloud ? 'Accounts are not set up on this copy of PokoPal yet.' : 'Accounts could not load. Reload PokoPal with a signal and try again.';
+  } else if (st && st.state === 'unavailable') {
+    btn.disabled = true;
+    how.textContent = 'Accounts need a signal the first time. Reload when the phone is connected.';
+  } else {
+    btn.disabled = !st || st.state === 'loading';
+    how.textContent = 'Saves your board online, opens it on any phone, and lets you share it with someone.';
   }
-  if (share) {
-    box.dataset.state = s;
-    $('shareState').textContent = syncLabel(st);
-    $('shareSub').textContent = st && st.state === 'offline' ? 'Moves made now are kept and sent when the phone has signal again.'
-      : st && st.state === 'error' ? (st.error || 'Sharing could not start.')
-      : 'Every move shows on both phones. Changes from the other phone arrive while PokoPal is open.';
+  if (on) {
+    const b = st.board, people = b ? b.members.length : 0;
+    const others = b ? b.members.filter(u => u !== st.user.uid).map(u => b.memberNames[u]).filter(Boolean) : [];
+    $('accountBox').dataset.state = st.state;
+    $('accountWho').textContent = st.user.name ? `${st.user.name} · ${st.user.email}` : st.user.email;
+    $('accountState').textContent = accountLabel(st);
+    $('accountSub').textContent = st.state === 'error' ? (st.error || 'Something went wrong.')
+      : st.state === 'offline' ? 'Moves made now are kept and saved when the phone has signal again.'
+      : b ? `Board “${b.name}” · ${people === 1 ? 'just you' : people === 2 && others.length ? `you and ${others[0]}` : `${people} people`}. Every move saves to your account and shows on every phone on this board.`
+      : 'Opening your board…';
+    $('leaveBoardBtn').hidden = !b || people < 2;
   }
+  $('nudge').hidden = on || !accountsReady() || !!state.nudgeDismissed || !state.placedOnce || !st || st.state === 'loading' || st.state === 'unavailable';
 }
 
-function startSharing() {
-  if (!canShare()) return;
-  share = { code: PokoSync.newCode(), deviceId: newDeviceId(), since: new Date().toISOString(), role: 'host' };
-  saveShare();
-  startSync(false);
-  openShareDlg('show');
-  showStatus('Sharing is on. Send the code to the other phone.', null, null, 3200);
+// ---- sign in, create an account, reset a password ----
+function setAuthMode(mode) {
+  authMode = mode;
+  $('authTitle').textContent = mode === 'up' ? 'Create an account' : mode === 'reset' ? 'Reset your password' : 'Sign in';
+  $('authHint').textContent = mode === 'reset' ? 'We email you a link to set a new password. Then come back here and sign in.'
+    : 'Your board is saved to your account and opens on any phone you sign in on.';
+  $('authName').hidden = mode !== 'up';
+  $('authPassword').hidden = mode === 'reset';
+  $('authPassword').autocomplete = mode === 'up' ? 'new-password' : 'current-password';
+  $('authGoLabel').textContent = mode === 'up' ? 'Create account' : mode === 'reset' ? 'Send reset email' : 'Sign in';
+  $('authToggle').textContent = mode === 'in' ? 'Create an account' : 'I have an account';
+  $('authForgot').hidden = mode !== 'in';
+  $('authError').hidden = true;
 }
-function joinSharing(text) {
-  const code = PokoSync.normalizeCode(text);
-  if (!code) { showStatus('That is not a PokoPal code. It looks like XXXX-XXXX-XXXX-XXXX-XXXX-XXXX.', null, null, 3600); return false; }
-  if (share && share.code === code) { showStatus('This phone is already on that board', null, null, 2600); closeSheets(); return true; }
-  if (share && !confirm('Leave the current shared board and join this one?')) return false;
-  const n = placedCount();
-  share = { code, deviceId: newDeviceId(), since: new Date().toISOString(), role: 'guest' };
-  saveShare();
-  startSync(true);
-  closeSheets();
-  showStatus(n ? `Joined. Your ${n} placed will combine with the shared board.` : 'Joined the shared board', null, null, 3200);
-  return true;
+function openAuth(mode, hint) {
+  if (!accountsReady()) return;
+  setAuthMode(mode || 'in');
+  if (hint) $('authHint').textContent = hint;
+  const sh = $('sheet'); if (sh.open) sh.close();
+  showDialog($('authDlg'));
+  setTimeout(() => $(authMode === 'up' ? 'authName' : 'authEmail').focus(), 50);
 }
-function stopSharing() {
-  if (!share) return;
-  if (!confirm('Stop sharing? The board stays on this phone, but moves will no longer show on the other phone.')) return;
-  share = null; saveShare();
-  stopSync();
-  closeSheets();
-  showStatus('Sharing is off', null, null, 2200);
+function showAuthNote(text, kind) {
+  const e = $('authError');
+  e.textContent = text;
+  e.classList.toggle('err', kind !== 'ok');
+  e.classList.toggle('ok', kind === 'ok');
+  e.hidden = false;
 }
+async function authSubmit(e) {
+  e.preventDefault();
+  if (!cloud) return;
+  const email = $('authEmail').value.trim(), pw = $('authPassword').value, name = $('authName').value.trim();
+  if (!email) { showAuthNote('Enter your email address.'); return; }
+  if (authMode === 'up' && pw.length < 8) { showAuthNote('Pick a password of eight characters or more.'); return; }
+  if (authMode === 'in' && !pw) { showAuthNote('Enter your password.'); return; }
+  const btn = $('authGo');
+  btn.disabled = true; $('authError').hidden = true;
+  try {
+    if (authMode === 'reset') { await cloud.resetPassword(email); setAuthMode('in'); showAuthNote('Reset email sent. Open it, set a new password, then sign in here.', 'ok'); }
+    else if (authMode === 'up') { await cloud.signUp(email, pw, name); closeSheets(); showStatus('Account created. Your board is saved online.', null, null, 3200); }
+    else { await cloud.signIn(email, pw); closeSheets(); showStatus('Signed in', null, null, 2200); }
+    $('authPassword').value = '';
+  } catch (err) { showAuthNote(PokoCloud.authErrorText(err)); }
+  btn.disabled = false;
+}
+async function doSignOut() {
+  if (!confirm('Sign out? The board stays on this phone, and moves made while signed out are saved to your account next time you sign in.')) return;
+  try { await cloud.signOut(); closeSheets(); showStatus('Signed out', null, null, 2200); }
+  catch (e) { showStatus(PokoCloud.authErrorText(e), null, null, 3200); }
+}
+
+// ---- sharing a board, joining one, leaving one ----
 function openShareDlg(mode, prefill) {
   $('showPane').hidden = mode !== 'show';
   $('joinPane').hidden = mode !== 'join';
-  $('shareTitle').textContent = mode === 'show' ? 'Share with another phone' : 'Join a shared board';
-  if (mode === 'show') { $('codeText').textContent = share ? share.code : ''; $('copyLinkBtn').hidden = !shareLink(); }
-  else {
-    $('codeInput').value = prefill || '';
-    const note = $('joinNote');
-    note.hidden = !(prefill && isIOS() && !isStandalone() && !window.POKOPIA_DATA);
-    note.textContent = 'If PokoPal is on your home screen, open it there, tap ⋯ → “Have a code? Join a shared board” and paste this code, so the shared board lands in the copy you use.';
-  }
+  $('shareTitle').textContent = mode === 'show' ? 'Share this board' : 'Join a board';
+  if (mode === 'join') $('codeInput').value = prefill || '';
+  $('copyLinkBtn').hidden = !!window.POKOPIA_DATA;
   const sh = $('sheet'); if (sh.open) sh.close();
   showDialog($('shareDlg'));
   if (mode === 'join' && !prefill) $('codeInput').focus();
 }
-function shareLink() { return (window.POKOPIA_DATA || !share) ? '' : `${location.origin}${location.pathname}#join=${share.code}`; }
+async function openShare() {
+  if (!signedIn()) { openAuth('in', 'Sign in or create an account to share your board.'); return; }
+  try { $('codeText').textContent = await cloud.share(); openShareDlg('show'); }
+  catch (e) { showStatus(PokoCloud.authErrorText(e), null, null, 3200); }
+}
+async function newShareCode() {
+  try { $('codeText').textContent = await cloud.newCode(); showStatus('New code. The old one no longer works.', null, null, 2600); }
+  catch (e) { showStatus(PokoCloud.authErrorText(e), null, null, 3200); }
+}
+const currentCode = () => $('codeText').textContent.trim();
+function shareLink() { const c = currentCode(); return (window.POKOPIA_DATA || !c) ? '' : `${location.origin}${location.pathname}#join=${c}`; }
 function shareMessage() {
-  const link = shareLink();
-  return `Join my PokoPal board 💜\nCode: ${share.code}\nOpen PokoPal → ⋯ → “Have a code? Join a shared board” → paste the code.${link ? `\nOr tap: ${link}` : ''}`;
+  const link = shareLink(), b = cloudStatus && cloudStatus.board;
+  return `Join my PokoPal board${b ? ` “${b.name}”` : ''} 💜\nCode: ${currentCode()}\nOpen PokoPal, sign in or create an account, tap ⋯ → “Have a code? Join a board” → paste the code.${link ? `\nOr tap: ${link}` : ''}`;
 }
 async function sendCode() {
-  if (!share) return;
+  if (!currentCode()) return;
   const text = shareMessage();
   try { if (navigator.share) { await navigator.share({ text }); showStatus('Code sent', null, null, 2000); return; } }
   catch (e) { if (e && e.name === 'AbortError') return; }
@@ -1292,16 +1360,40 @@ async function copyText(text, done) {
   try { await navigator.clipboard.writeText(text); showStatus(done, null, null, 2600); return true; }
   catch (e) { showStatus('Could not copy. Press and hold the code to select it.', null, null, 3000); return false; }
 }
-// A "#join=CODE" link (the one Send the code puts in the text) opens the join sheet with the code filled in.
+async function doJoin(text) {
+  const code = PokoCloud.normalizeInviteCode(text);
+  if (!code) { showStatus('That is not a PokoPal code. It looks like XXXX-XXXX.', null, null, 3400); return false; }
+  if (!signedIn()) { pendingJoin = code; openAuth('in', 'Sign in or create an account to join that board.'); return false; }
+  const b = cloudStatus.board, n = placedCount();
+  if (b && b.members.length > 1 && !confirm(`Leave “${b.name}” and join the board with code ${code}?`)) return false;
+  try {
+    const r = await cloud.join(code);
+    closeSheets();
+    showStatus(r === 'already' ? 'You are already on that board' : n ? `Joined. Your ${n} placed combine with the board.` : 'Joined the board', null, null, 3400);
+    return true;
+  } catch (e) { showStatus((e && e.message) || 'Could not join', null, null, 3600); return false; }
+}
+async function leaveBoard() {
+  const b = cloudStatus && cloudStatus.board; if (!b) return;
+  if (!confirm(`Leave “${b.name}”? You keep a copy of the board as it is now; from here on your moves stay separate.`)) return;
+  try { await cloud.leave(); closeSheets(); showStatus('You are on your own board now', null, null, 3000); }
+  catch (e) { showStatus(PokoCloud.authErrorText(e), null, null, 3200); }
+}
+async function renameBoard() {
+  const b = cloudStatus && cloudStatus.board; if (!b) return;
+  const name = prompt('Name this board', b.name); if (name == null) return;
+  try { await cloud.rename(name); } catch (e) { showStatus(PokoCloud.authErrorText(e), null, null, 3200); }
+}
+// A "#join=CODE" link (the one Send the code puts in the text) joins that board, after sign-in if need be.
 function handleJoinLink() {
   const m = location.hash.match(/join=([^&]+)/i);
   if (!m) return;
   let code = null;
-  try { code = PokoSync.normalizeCode(decodeURIComponent(m[1])); } catch (e) { code = null; }
+  try { code = PokoCloud.normalizeInviteCode(decodeURIComponent(m[1])); } catch (e) { code = null; }
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
-  if (!code || !canShare()) return;
-  if (share && share.code === code) { showStatus('This phone is already on that board', null, null, 2600); return; }
-  openShareDlg('join', code);
+  if (!code || !accountsReady()) return;
+  if (signedIn()) openShareDlg('join', code);
+  else { pendingJoin = code; openAuth('in', 'Sign in or create an account to join the board you were sent.'); }
 }
 
 // ---------- wiring ----------
@@ -1349,7 +1441,7 @@ function wire() {
   $('moreBtn').addEventListener('click', openSheet);
   $('sheetClose').addEventListener('click', closeSheets);
   $('textClose').addEventListener('click', closeSheets);
-  for (const id of ['sheet', 'textDlg', 'shareDlg']) $(id).addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  for (const id of ['sheet', 'textDlg', 'shareDlg', 'authDlg']) $(id).addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
   $('backupBtn').addEventListener('click', doBackup);
   $('copyBtn').addEventListener('click', () => openText('copy'));
   $('pasteBtn').addEventListener('click', () => openText('paste'));
@@ -1364,20 +1456,29 @@ function wire() {
   $('clearBtn').addEventListener('click', clearBoard);
   $('textGo').addEventListener('click', textGo);
   $('syncDot').addEventListener('click', openSheet);
-  $('shareBtn').addEventListener('click', startSharing);
+  $('signInBtn').addEventListener('click', () => openAuth('in'));
+  $('nudgeBtn').addEventListener('click', () => openAuth('up'));
+  $('nudgeNo').addEventListener('click', () => { state.nudgeDismissed = true; save(); renderAccount(); });
   $('joinBtn').addEventListener('click', () => openShareDlg('join'));
-  $('showCodeBtn').addEventListener('click', () => openShareDlg('show'));
-  $('stopShareBtn').addEventListener('click', stopSharing);
+  $('shareBoardBtn').addEventListener('click', openShare);
+  $('joinBoardBtn').addEventListener('click', () => openShareDlg('join'));
+  $('renameBoardBtn').addEventListener('click', renameBoard);
+  $('leaveBoardBtn').addEventListener('click', leaveBoard);
+  $('signOutBtn').addEventListener('click', doSignOut);
+  $('authClose').addEventListener('click', closeSheets);
+  $('authForm').addEventListener('submit', authSubmit);
+  $('authToggle').addEventListener('click', () => setAuthMode(authMode === 'in' ? 'up' : 'in'));
+  $('authForgot').addEventListener('click', () => setAuthMode('reset'));
   $('shareClose').addEventListener('click', closeSheets);
   $('sendCodeBtn').addEventListener('click', sendCode);
-  $('copyCodeBtn').addEventListener('click', () => copyText(share ? share.code : '', 'Code copied'));
+  $('copyCodeBtn').addEventListener('click', () => copyText(currentCode(), 'Code copied'));
   $('copyLinkBtn').addEventListener('click', () => copyText(shareLink(), 'Link copied'));
-  $('joinGoBtn').addEventListener('click', () => joinSharing($('codeInput').value));
-  $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') joinSharing($('codeInput').value); });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && sync) sync.resume(); });
-  window.addEventListener('online', () => { if (sync) sync.resume(); });
-  window.addEventListener('hashchange', handleJoinLink);   // a #join= link tapped while PokoPal is already open in this tab
-  setInterval(() => { if ($('sheet').open) { renderSync(); renderAbout(); } }, 5000);
+  $('newCodeBtn').addEventListener('click', newShareCode);
+  $('joinGoBtn').addEventListener('click', () => doJoin($('codeInput').value));
+  $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') doJoin($('codeInput').value); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && cloud) cloud.resume(); });
+  window.addEventListener('hashchange', handleJoinLink);
+  setInterval(() => { if ($('sheet').open) { renderAccount(); renderAbout(); } }, 5000);
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; updateInstallRow(); });
   window.addEventListener('appinstalled', () => { installPrompt = null; updateInstallRow(); showStatus('PokoPal is on your home screen', null, null, 3000); });
 }
@@ -1393,15 +1494,14 @@ function wire() {
     wire();
     setView(state.view);
     refresh();
-    syncConf = data.sync || null;
-    loadShare();
-    renderSync();
+    authConf = data.auth || null;
+    renderAccount();
     renderAbout();
     registerSW();
-    if (share) startSync(false);
-    handleJoinLink();
+    startCloud();
+    if (!accountsReady()) handleJoinLink();   // with accounts, the link waits until the sign-in state is known
     window.PokoPal = { backup: backupText, restore: restoreFromText, placements: () => ({ ...state.placements }),
-                       share: () => (share ? share.code : null), sync: () => (sync ? sync.status : null) };
+                       account: () => (cloud ? cloud.status : null), join: doJoin };
   } catch (err) {
     document.body.insertAdjacentHTML('afterbegin',
       `<div style="margin:12px;padding:12px;border-radius:12px;background:#FDE7E7;color:#7A1F1F;font-weight:600">The data files could not be loaded (${err && err.message ? err.message : err}). Open this page through a web server or the packaged single file.</div>`);

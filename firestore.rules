@@ -1,0 +1,58 @@
+// PokoPal — Cloud Firestore security rules (phase 3, September 6, 2026). Deployed by tools/setup_firebase.sh.
+//
+//   users/{uid}      a person's own record: only they can read or write it
+//   boards/{id}      a board: its members read and edit it; anyone holding a live invite code may add themselves;
+//                    a member may remove themselves; only the owner may delete it
+//   invites/{code}   code → board: any signed-in user may fetch one by its exact code (never list them);
+//                    only a member of the board may create or delete one
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function changedOnly(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+
+    match /users/{userId} {
+      allow read, write: if signedIn() && me() == userId;
+    }
+
+    match /boards/{boardId} {
+      function isMember() { return signedIn() && me() in resource.data.members; }
+      function editing() {
+        return isMember() && changedOnly(['entries', 'name', 'inviteCode', 'memberNames', 'updatedAt', 'updatedBy']);
+      }
+      function joining() {
+        return signedIn()
+          && !(me() in resource.data.members)
+          && changedOnly(['members', 'memberNames', 'joinedWith', 'updatedAt'])
+          && request.resource.data.members == resource.data.members.concat([me()])
+          && request.resource.data.joinedWith is string
+          && exists(/databases/$(db)/documents/invites/$(request.resource.data.joinedWith))
+          && get(/databases/$(db)/documents/invites/$(request.resource.data.joinedWith)).data.boardId == boardId;
+      }
+      function leaving() {
+        return isMember()
+          && changedOnly(['members', 'memberNames', 'updatedAt'])
+          && request.resource.data.members == resource.data.members.removeAll([me()]);
+      }
+      allow read: if isMember();
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == me()
+        && request.resource.data.members == [me()];
+      allow update: if editing() || joining() || leaving();
+      allow delete: if signedIn() && resource.data.ownerUid == me();
+    }
+
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.createdBy == me()
+        && request.resource.data.boardId is string
+        && me() in get(/databases/$(db)/documents/boards/$(request.resource.data.boardId)).data.members;
+      allow update: if false;
+      allow delete: if signedIn()
+        && me() in get(/databases/$(db)/documents/boards/$(resource.data.boardId)).data.members;
+    }
+  }
+}

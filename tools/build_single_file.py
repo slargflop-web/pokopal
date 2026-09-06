@@ -24,7 +24,7 @@ def main():
     html = (DOCS / "index.html").read_text(encoding="utf-8")
     towns = json.loads((DOCS / "data" / "towns.json").read_text(encoding="utf-8"))
     pokemon = json.loads((DOCS / "data" / "pokemon.json").read_text(encoding="utf-8"))
-    sync = json.loads((DOCS / "data" / "sync.json").read_text(encoding="utf-8"))
+    auth = json.loads((DOCS / "data" / "auth.json").read_text(encoding="utf-8"))
 
     cache = {}
     for p in pokemon["pokemon"]:
@@ -37,18 +37,18 @@ def main():
             p.pop(k, None)
 
     payload = json.dumps({"towns": towns["towns"], "pokemon": pokemon["pokemon"],
-                          "sync": {k: sync[k] for k in ("relays", "kind", "tag") if k in sync}}, ensure_ascii=False, separators=(",", ":"))
+                          "auth": {k: auth[k] for k in ("sdk", "sdkBase", "firebase") if k in auth}}, ensure_ascii=False, separators=(",", ":"))
     payload = payload.replace("</", "<\\/")
     inject = f"<script>window.POKOPIA_DATA={payload};</script>"
     assert "<!--#data-->" in html, "docs/index.html lost its <!--#data--> marker"
     full = html.replace("<!--#data-->", inject)
 
-    # The shared-board engine is its own file beside index.html (testable in Node); a single file carries it inline.
-    sync_js = (DOCS / "sync.js").read_text(encoding="utf-8")
-    assert "</script" not in sync_js, "docs/sync.js must not contain </script"
-    tag = '<script src="sync.js"></script>'
-    assert tag in full, "docs/index.html lost its sync.js script tag"
-    full = full.replace(tag, "<script>\n" + sync_js + "\n</script>", 1)
+    # The accounts engine is its own file beside index.html (testable in Node); a single file carries it inline.
+    cloud_js = (DOCS / "cloud.js").read_text(encoding="utf-8")
+    assert "</script" not in cloud_js, "docs/cloud.js must not contain </script"
+    tag = '<script src="cloud.js"></script>'
+    assert tag in full, "docs/index.html lost its cloud.js script tag"
+    full = full.replace(tag, "<script>\n" + cloud_js + "\n</script>", 1)
 
     # The icons live beside index.html; a single file and the Claude page cannot reach them, so inline the small ones.
     for rel in ("icons/pokopal-mark.png", "icons/apple-touch-icon.png", "icons/favicon-64.png", "icons/favicon-32.png"):
