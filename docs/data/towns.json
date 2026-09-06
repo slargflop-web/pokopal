@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "note": "The towns a Pokémon can live in. Adding a town (Expansion Pass Part 3, 2027) is one more object in `towns`; the app renders whatever is here, in `order`. `aliases` are spellings used by data sources (Serebii says 'Withered Wastelands'). `otherPlaces` are locations the sources mention that are NOT towns and never appear on the board.",
+  "towns": [
+    {
+      "id": "withered-wasteland",
+      "name": "Withered Wasteland",
+      "short": "Wasteland",
+      "order": 1,
+      "emoji": "🌵",
+      "color": "#D08B3E",
+      "basedOn": "Fuchsia City, drought-stricken",
+      "unlock": "Start of the game",
+      "aliases": ["Withered Wastelands"]
+    },
+    {
+      "id": "bleak-beach",
+      "name": "Bleak Beach",
+      "short": "Beach",
+      "order": 2,
+      "emoji": "🌊",
+      "color": "#3B6FB6",
+      "basedOn": "Vermilion City and the S.S. Anne, in darkness",
+      "unlock": "Finish \"Yawn Up a Storm!\" in the Wasteland",
+      "aliases": []
+    },
+    {
+      "id": "rocky-ridges",
+      "name": "Rocky Ridges",
+      "short": "Ridges",
+      "order": 3,
+      "emoji": "⛰️",
+      "color": "#8A6F5C",
+      "basedOn": "Pewter City and Mt. Moon, ash-covered",
+      "unlock": "Same trigger as Bleak Beach",
+      "aliases": []
+    },
+    {
+      "id": "sparkling-skylands",
+      "name": "Sparkling Skylands",
+      "short": "Skylands",
+      "order": 4,
+      "emoji": "☁️",
+      "color": "#5B9BD5",
+      "basedOn": "Celadon and Saffron as floating sky islands",
+      "unlock": "Main requests in the first three towns, plus Hyper Trainer rank",
+      "aliases": []
+    },
+    {
+      "id": "palette-town",
+      "name": "Palette Town",
+      "short": "Palette",
+      "order": 5,
+      "emoji": "🎨",
+      "color": "#C75B9B",
+      "basedOn": "Sandbox islands, no story; 25 exclusive Pokémon incl. all Eeveelutions",
+      "unlock": "After the tutorial",
+      "aliases": []
+    },
+    {
+      "id": "bubbly-basin",
+      "name": "Bubbly Basin",
+      "short": "Basin",
+      "order": 6,
+      "emoji": "🫧",
+      "color": "#2FA8B5",
+      "basedOn": "Sunken Cerulean City, mostly underwater",
+      "unlock": "Expansion Pass Part 1 (Aug 2026) plus a Bleak Beach request and the Dive move",
+      "dlc": "Expansion Pass Part 1",
+      "aliases": []
+    }
+  ],
+  "otherPlaces": [
+    { "id": "cloud-island", "name": "Cloud Island", "note": "Online build space, not a town. Most habitats also work there." },
+    { "id": "dream-islands", "name": "Dream Islands", "note": "Resource trips, not a town. Some legendaries are met there." }
+  ]
+}

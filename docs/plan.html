@@ -1,0 +1,440 @@
+<meta charset="utf-8">
+<title>PokoPal Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #F4F8F3;
+    --surface: #FFFFFF;
+    --surface-2: #EAF1EB;
+    --ink: #1B2620;
+    --ink-2: #3D4B43;
+    --muted: #5F6E65;
+    --line: #D6E1D8;
+    --accent: #7E4FAD;
+    --accent-ink: #5E3689;
+    --accent-soft: #EFE7F7;
+    --leaf: #3F8F63;
+    --leaf-soft: #DDF0E3;
+    --target: #F6EFFB;
+    --shadow: 0 1px 2px rgba(27, 38, 32, 0.06), 0 6px 18px rgba(27, 38, 32, 0.07);
+    --radius: 14px;
+    --display: "Fredoka", "Trebuchet MS", "Segoe UI", sans-serif;
+    --body: "Figtree", "Helvetica Neue", Arial, sans-serif;
+    --mono: "DM Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121915;
+      --surface: #1A231E;
+      --surface-2: #222D27;
+      --ink: #E7EEE8;
+      --ink-2: #C3CFC7;
+      --muted: #96A69B;
+      --line: #2E3B34;
+      --accent: #C4A3E3;
+      --accent-ink: #D8C0EE;
+      --accent-soft: #2B2338;
+      --leaf: #7CC79A;
+      --leaf-soft: #1F3328;
+      --target: #2A2236;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 22px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121915;
+    --surface: #1A231E;
+    --surface-2: #222D27;
+    --ink: #E7EEE8;
+    --ink-2: #C3CFC7;
+    --muted: #96A69B;
+    --line: #2E3B34;
+    --accent: #C4A3E3;
+    --accent-ink: #D8C0EE;
+    --accent-soft: #2B2338;
+    --leaf: #7CC79A;
+    --leaf-soft: #1F3328;
+    --target: #2A2236;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 22px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+  h1, h2, h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    line-height: 1.15;
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.005em;
+  }
+  h1 { font-size: 46px; }
+  h1 .mark { width: 44px; height: 44px; vertical-align: -6px; margin-right: 10px; }
+  h2 { font-size: 27px; }
+  h3 { font-size: 19px; font-weight: 500; }
+  p { margin: 0; max-width: 66ch; }
+  section { display: flex; flex-direction: column; gap: 16px; }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  strong { font-weight: 600; color: var(--ink); }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .dek { font-size: 20px; color: var(--ink-2); max-width: 32ch; line-height: 1.4; }
+  header { display: flex; flex-direction: column; gap: 12px; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* the one lifted block */
+  .verdict {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 6px solid var(--accent);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .verdict h2 { font-size: 30px; color: var(--accent-ink); }
+  .verdict p { max-width: 62ch; }
+
+  ul, ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; max-width: 66ch; }
+  li::marker { color: var(--muted); }
+
+  /* tables */
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 560px; }
+  th, td { text-align: left; padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--line); }
+  th { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--surface-2); }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+  td.name { font-weight: 600; white-space: nowrap; }
+
+  /* mockup of the board */
+  .mock {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 640px) { .mock { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .panel.is-target { background: var(--target); border: 2px dashed var(--accent); }
+  .bar { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .bar .title { font-family: var(--display); font-weight: 600; font-size: 17px; }
+  .bar .count { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .search { border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 13px; color: var(--muted); background: var(--surface-2); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    border-radius: 999px; padding: 3px 10px 3px 4px;
+    font-size: 13px; font-weight: 600; line-height: 1;
+    color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,0.18);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+    white-space: nowrap;
+  }
+  .chip img { width: 22px; height: 22px; image-rendering: pixelated; border-radius: 50%; background: rgba(255,255,255,0.35); }
+  .chip.dual { background: linear-gradient(100deg, var(--c1) 0 60%, var(--c2) 60% 100%); }
+  .chip.ghost { transform: rotate(-4deg) scale(1.08); box-shadow: 0 10px 24px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(0,0,0,0.08); position: relative; }
+  .ghost-wrap { position: relative; height: 0; }
+  .ghost-wrap .chip { position: absolute; right: 8px; top: -18px; }
+  .towns { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .drop-hint { font-family: var(--mono); font-size: 11px; color: var(--accent-ink); letter-spacing: 0.04em; }
+  .caption { font-size: 14px; color: var(--muted); max-width: 70ch; }
+
+  /* type color strip */
+  .types { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+  .type { border-radius: 8px; padding: 8px 10px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,0.2); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08); }
+  .type.ink { color: #1B2620; text-shadow: none; }
+
+  /* small feature blocks */
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .pair { grid-template-columns: 1fr; } }
+  .block { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .block h3 { color: var(--accent-ink); }
+  .block p { font-size: 15px; color: var(--ink-2); }
+
+  .kick {
+    background: var(--leaf-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .kick .say { font-family: var(--display); font-size: 24px; color: var(--leaf); }
+  .kick p { color: var(--ink-2); font-size: 15px; }
+  .sources { font-size: 14px; color: var(--muted); max-width: 72ch; }
+  .sources a { color: var(--muted); }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .chip.ghost { animation: bob 2.2s ease-in-out infinite; }
+    @keyframes bob { 0%, 100% { transform: rotate(-4deg) scale(1.08) translateY(0); } 50% { transform: rotate(-4deg) scale(1.08) translateY(-3px); } }
+  }
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">Plan · September 6, 2026 · for Andrea, built by Taylor</div>
+    <h1><img class="mark" src="data:image/png;base64,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" alt="" width="44" height="44">PokoPal</h1>
+    <p class="dek">A drag-and-drop tracker for which Pokémon lives in which town in Andrea's Pokopia save.</p>
+  </header>
+
+  <section class="verdict">
+    <h2>Build it.</h2>
+    <p>Nothing that exists today does what Andrea described: drag a Pokémon card into the town it lives in, on a phone. The game doesn't keep a residents-per-town list either, so this fills a real gap.</p>
+    <p>The build is small. The roster and town data already exist in open community datasets, sprites come from a public Pokémon API, and the app is one web page Andrea installs to her iPhone home screen. No App Store, no developer account, no Xcode. A first working version is one working session away.</p>
+  </section>
+
+  <section>
+    <h2>What it will look like</h2>
+    <div class="mock" aria-label="Mockup of the board">
+      <div class="panel">
+        <div class="bar"><span class="title">Bank</span><span class="count">142 / 357 placed</span></div>
+        <div class="search">Search Pokémon…</div>
+        <div class="chips">
+          <span class="chip dual" style="--c1:#7AC74C;--c2:#A33EA1"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAQEBAYSkoxc3M5lJRSYili1bRzrDGD7sWk1UGsADG9/3PNzc3uIDn/amL///87EAzGAAAAAXRSTlMAQObYZgAAAZ1JREFUWMPtlL9Lw0AUx9NUce1JwMGlLUfbrdAGcVAkl0fI5iSloxiOrg4hiJuWcP+AlPwLASm4lWzB0dG9/0HAunbwpbjfq6PcZ/5+8n5weZZlMBgMhv/F4b75KaOHj5L4ZppMWuT8Y1Gssge6gPmiSLKYINjtukBRvJ0kK5IQPrXHyGhwWxTZyz1BUGOlUjlQOyHRlwhDpSCUKq2FBWFqX6k5hKmU0Wkt6Hs6xwKgdsIqW8Q0IVQpoJBlSawdojmYKRz6+aMHXrYgCPZnqubh7HJZgtdPiALUwmYnTLTCxTpUoObrfAtCUISrZYAzRMtqCz7040S7pbM8kLjSvHoHANHXCx35C/Da0D8NfiyDO8yPGLjQhY7+dV/nUt512DdgiS4X+tfK/bzGBYEdcWhrhYbjv1aVC54D2BRBQAOnBeaAK7CKR/hHPYagwz0cgiAcyAg3KiQIhyZYrsQoD6I9BPAYh1oQQDlMgYw8K0Ch4bouRWhGtSCjll2WJeXqDYe8ZfUC7IYx0qlsMGbZm83Xfqee+HGDwWAwGP7KD5Vqm0oTWykbAAAAAElFTkSuQmCC" alt="">Bulbasaur</span>
+          <span class="chip" style="background:#EE8130"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAALVBMVEUAAAAIOYsQEBAYi7QxrO6LKQDeUjnmOQDmrFr2pAD/lEH/xWL/1Qj/1Xv///8NIPGPAAAAAXRSTlMAQObYZgAAAchJREFUWMPtlb9Lw0AUx49A7FwQB6dyYggdOol/h8ulpaDDQY4QF7dQ6FSwHILgFgouFsxwgoOj/gFFyCwi3CJ08a/wXX6s3ouTyH2HJMP75N67+753hDg5OTk5/UntxKxbfKpUJ+JcgQYdFnh5/g2wxgPpg1JFJwD+n6oCn9OeAfoCDxwDcNeP8MAXAI8HHYChAXZb4MIa7+8DcH/U1jC3A9UxiC6A2dS4AXq39hqmsEAccfgCB/bKGytAwasjwQlj3KywsWV0QijNIhEzpQywebUAXsyCmIkADFJAHVlWWjbWSxUfFlQI2ChKSJbP85+BACI5xINM3fNNaSnCC0QjbjZ2VtoAQ8SJFIJVBzFblTmxErGUy7TuoF6+yqwH4UVav7ctl43t9iMTrXXbcv4YYfBTAzRzw39CA3VOPmIa+NcAXDXAFANAvP6oAWYMZRMzwJspwmeYceMXJqUlmJVBayQIQCVaS3DrGhyYLDBTYyKlAQqwlRxggHUNiEDIBWouFaGUEfRPKBeYceZBQ4QyAoOHlyeo0Qepc3oID4aLB8D0TiQ4crZ6dXNOFRYYnVVTL0LfKR6l1Wu7/ex2vVM6IE5OTk7/Ud/V9spBc5Q2fAAAAABJRU5ErkJggg==" alt="">Charmander</span>
+          <span class="chip" style="background:#6390F0"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAQEBApc4NanKRiKQCDKQCLxc205u69agDNeynVlFLVzc3mrFr/1Wr/5pz///8R5ETqAAAAAXRSTlMAQObYZgAAAb1JREFUWMPtlL9KxEAQxi/JC2QvnihaeAkXCwtNBheus7eUPIBZXLGy82ohnZVi4cIl76A2h1ZqJaz2Bxd7C1PoCzgr9jcpBIv9uoX5sfPnm+l0rKysrKz+pwDCdvGjkWxDeBgv5RodWB+dIJCT491D80GLL1wMFm2ACIM5cJlSgYH5YeVWJFRgk0u5z26ADAwM0PukA31M6bgF4JqmHvS+yIBzwjEnAfSUumZqEIHvhZRRbG05iyIMB3uwxkmdjVOW9JTKIOEy8glOxWyC7SyDtCtzCmCMtB9hxcu3kjZrdJJIGVvVsaT1yQWAcV3rRy7AJ3U1hGFZT9UFprWDL8KqsuG7GtfTCJaKTigFYRbVx2vzMX1gk8LFmRPWomoQ0Hp3UkS03f4BSgROgeexmF+6equaaa3PJgsAcU4AqmelVT27uisg5ZLQ3Kqpmlk5u7w/hYTicq80NTw/pRtEgB/VL9glvDPXAMH8jDx5pJXWT+gpY0JGMTjWrB8RCCjxxuDbWqsLBPqMYj8HbZppfc4l9QwEmHnGWES+GxjJfjnaIRNxYlJ3cJNoG8ScnzhHLPb9Thv9glZWVlZWf69vfHii3k2wjfUAAAAASUVORK5CYII=" alt="">Squirtle</span>
+          <span class="chip" style="background:#A8A77A"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAHlBMVEUAAAAAAABSMSBzSkqkYkq9nHvVnErmxZT/5qz////1fjcxAAAAAXRSTlMAQObYZgAAAdZJREFUWMPt1T1v2zAQBmCZUndREjRbApuiW23S9lrFZ2VO4kJZlRDcjYJg/4E99xf3KPUD6MJTh058F2u4BzyS0jlJYmJiYv7O54X16dtCoBaD+tOyjqDOl4Hu3wGQANtWM8hgJAFRiAlkvSEC3k2/vf75EATNVKc0r/IFIDW8JQI21e3HoqF1lLAyXydpz1sqyO5exxwXaAXx/pTWptvzoiUukBpj+jc9cvALpOH3cG+mtMCxfOdyIniFBusHdw6CbF5Ab/H54OyFcEYzwB2njgLY93kJBDuHCba04lh97wHugAQaBB9r7YFFEOzprkTAPVAP52EgAIO7Lmo45OoE54dwT5nGFZoeDl8Bc3KnEGBGmb3RR+cqLyyEwJfKSKPhFziHwLvrc+XrD26YeoIQePlmBykl3pktp/pjELzcbnj8eGml8kAGwHC9Yayz7lFKFHIT+nysB1e85MdS+oQA+w2qGQTfpdYDNwwX6Hz9MfzFfcB6bEh4oNQmPATe4xFddv7WSnnsCJOGWTeUHQgPOGkyNfayBQ84T4jj/mmLGwi+FH8A8I3pcNPEegawLnAukYGAe1abUQhyR6JZ4dCg7tjPmfWq75f9UycNT2JiYmJi/l9+AMYgjhg81JkoAAAAAElFTkSuQmCC" alt="">Eevee</span>
+          <span class="chip dual" style="--c1:#B6A136;--c2:#E2BF65"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAHlBMVEUAAAAQEBBBOTFqalKUnJyclIO0tJzF1azN3s3///+CLIGrAAAAAXRSTlMAQObYZgAAAZRJREFUGBntwTFunEAABdC/cAFmE1ZJN2ANTpk1YfYMKQf0t18QH6V1FFBKdzlCctusoxQuwHZrad5DFEVRFL11dY3XS0vcaCzwWulpLiR1e7zSaZFUy8niJYkFkC7yqmf1agHUJbYlfrBAevFDO82ia4F6WSw23c66ALtP79pWwbjmiGSalxZb0lleGXbfHnKa97/2rLNqkKbP2HCaNYwZkp8PPH/4+Lshs6qSpu9Yl87ychluf3yRhq9/GvLovLwmi1WnWYMCklmPhobkXXnupekeq06zH52zif4byapnpUH3WJMu6mmY7cS7sqwlkpVMIy9ZrEilsciZIe8kjdVIsh3yvD1fZLHGDzzkAdgfzxJbXlWGYU8jizVeRpc8w87x0Q3L5jw40rDHqkRSw4CD4z8lXde0jqTFulIaGXZy7Oq6IdmRoW4YsKWURuZs2ZBsyODY0o8ZNhmJgdbxqmOwCXuSGbYdRjIgyXkVLFCO7AKekRgyAGlhjLEAEslneFZBiycqXfACg6eSIkMURVEURSv+ApO/fV0rwDRoAAAAAElFTkSuQmCC" alt="">Geodude</span>
+          <span class="chip dual" style="--c1:#735797;--c2:#A33EA1"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAIVBMVEUAAAAQEBA5KTlzSmqLYoO0KRC9lLTVrM3eUjne3t7////m1jcrAAAAAXRSTlMAQObYZgAAAqtJREFUWMPtVrFuFDEQvQLJ9cIRKXTrcIBS3l1FtznL268UCdqTmRVUBq08Eh1d6jSw6RIkovgrmbGX5Bp790qkfdJV57dv3sx4xovFjBkzZiQg0B5HQMQjCa6dEMZBFAgTCIcfRcCpBBTiyTSOh4Ro7VNoOCk9QWJy+hl2MTmpGCGmlkE4BIB/rPHzFum8UXWMy443h3jWgSJo03WQkxhKjFhrFQC11sCVwJTVwXBnlJJSvlbKALR2IcCmCZQZTQLFi626kKwCaUIISaAxRhVnOzq8LskIdxNmSwBaVXKz3Sq1k0sm5BOFjgw8lxtW2MlSQZuphWB1p9jx2YYU1pIkwGHynob2cSFDxNisZRFiatMEzohT1XcZUX6mmBQ3SZZgKv8tEk78nvNUt5gJaYHmrb+LAl/8dcmlSCqwaSKc+/tAOPX+D5uo2UR6QDHBBwHv/QMRWMGKjAoTvjayeUUEzwo6JK+1SQKdvG1WLBAIhj0jJAlOUez3zerEDyHpthU8oGyqNVTFX16FiO7kUgN3U9oDdqq6+U2u/XsiUFrpRrTUTJi2YNTp9c9mdUPeH/ZMcC4zPAR390X/ScqPdL6XJV9StOkqEMGYisvwpu/7PXcrNZ8QFjMXyFR9ZOypvXXoVkRIVxpVdfuyGfqVm5VHmoBMUKZalpcfrs5/yXgdQs1ytjtFA+Pd1Y87WfAQoCs3ttcMM2RZhvMtAUcJRCmKZRxkODbDMUymiFCFMYKl2tXA49Wo4bwdWT/sE4A+rzWFP7q8qEpkk+qnjAkZHVsRIm44B1rruKbFhJ1IPwecosdUZFRwSJY7mHk558P2F3HDHezhsTeSiMtdxDUDmXI//mM5PxhazwFMeWtxARwcQQh6rCCYMPndMeoh8fo47rkojn0tzpgx47/BXzZ1RnAIYtZ6AAAAAElFTkSuQmCC" alt="">Gastly</span>
+          <span class="chip" style="background:#6390F0"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAAAABSUmJ7YlKDAEGLi6S9IFK9QUHFrHPNzdX2Yhj/nGL/3in/5sX/7qT///+A0hpoAAAAAXRSTlMAQObYZgAAAr5JREFUWMPt1jFIG1EYAOALFxwlDy0BrdhKS8kUIR0yyGHKYdrcIoUMncQSIigO1aM/poOKS4bSQXC4Lkf0SMrbLJLh3iQOlZKxqyA4NEMQFCTj63+X4Hjvj9ChND8hXML/8f//e4+707RhDGMY/1bogwJj9q+Dq4eDMmnm686slgkvRzx1egbB9ay+G/5YnSf0k0Fwlu2BwgwBtLMIqiGIg1wkTND+3GpVw5WNbcg7QolOC0EiuExuyAM1eIz5532QpoDYPYhD+o4wRAxHKJvmAl6BSwFaubQgmsI353HmJflEmR8XornWLBV4nW3kpgnAEihWuVfgnAkSgE+Ce5zX66aoSQJYEYJzXuCeJd6/kvKtKn9ECB+B51nNGXkr5a0KrAm/UUFgNVNS4kfZ05rg210E/nNX7m+5UnWasKOGlBVufXdc58YuYolFBfARfOWTh86Bm7Sd4pICBCPI6S6fTDlLMglbzl2xqNi2oELXE6kDiSDvuNHrFA82wZXdmp96J+ULSJoOAWwj4LhI8hkwMN/sR57tYNcastKoPHKKzi0kGIAZdeuINcu4zYBHo4Yt3UBCYwzsqFVdvyjxbx1EfBq34GnwH2MRYP3iQhS4EYjDdB9ExtQvU5zwI+Mnig9p9cnTJnNsXEzwIyzRgFxkM/2hPzJmTXBuYD7k8wn1HWB8mVnHCH4ArqdNuNfHclA6Adj8DWDnlwlg1ARbJGGzg/kLCQp4mQ8AGGYemEYCJ5Y/bpoGjlAlVdixxPGKjRVeV3sPCVVcxdh8PDfWqQZBKdF7gurtEFBKtHugcx7kU0qMhg8rY651vlfdHaOAnT5onWb3SO8B4RCGjkCngbAnBHOn/dcBSgn9Uj/Vz6jvJlhCv9QSGvklCMdGMEhcPQB8GRBoxiD5o7j82UF6auPyDNRT5v5rGMMYxn8QfwBD8VbGQHft5AAAAABJRU5ErkJggg==" alt="">Magikarp</span>
+          <span class="chip dual" style="--c1:#A8A77A;--c2:#D685AD"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAJ1BMVEUAAAAQEBAQSosQtO4Yc8VqUmKkECDN7v/mc4Pm5ub/rKT/zcX///+OUQTfAAAAAXRSTlMAQObYZgAAAXNJREFUWMPtlKFOA0EQhhdzOdkVmJMFAQQFb9BgkLUoUnHZbB8AyyEu07sXKBLR5vJVISBNx5IQEh4KcZTgbjTsp/8vk9nZGecSiUQi8ecoS2MwF3HOZaXqrS3fKnWZzfXlZmQSWlU64kanhUnIVRVg8+KHhVzkPlfdATA1CHPVbVTd0QErgxA9RFWIAFOGhenhJiqUAKzWgw1nK7+JsC4A4MkiaIS6oi4bi+Dijb4CVff4ubQJqs9AtRgffzQWIWu34nkqZu/j6wiGSc8Xk+ALZnfj80hnEOLbewRmk+PziNiEE+Dh6uq0MQrjE6A7uljS2YTJGdDPIRiEdnEZYd1Pem0RtiWB0AvcWrYHuvI7z/Dva3e7fVjqYljI9bX5zncilR/sIVMNP3mxvKr3QRpAREQq05HJ5IeR8UDu85XxUB6EPl8bC7hQBxERH4wVMpHKe++DtYd9MAhWwfeVTCvtnDvw+9cyCr+GOHKJRCKR+Jd8AePZ4EsvfrZHAAAAAElFTkSuQmCC" alt="">Jigglypuff</span>
+          <span class="chip" style="background:#C22E28"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAALVBMVEUAAAAAAAApSlJae2pqUiBzpKSUvb2snFqs1cW0AADNvWLuUlLu5ov/g4v///8odZBeAAAAAXRSTlMAQObYZgAAAiBJREFUWMPtlM9q20AQxvUnD+CViZzeLBkJerOz1LgUSg6BgvFFFmN6lRINvhYMutcQtg/QQCkNBAJ5CEOugbxBD7n3MTorxS4UJI0OpRd9pxXMb2fmm1kZRqdOnTr9Dx2dt4xfPJ6ftbr/afN02wKYL/JFvmmR4H6+eczzHh+4u5/nYtAGyD98wks+YN7mAxfxogWwGSBiwgamJydC+YhjLvB+ptTnX1NkN/GOgNcPIR94uybgJuQ1Iccl4N1MWYBU27HxpQAKm2xZH28ppVKpZlt1hTqDPVO1hO1SIEYfCVMRuWSHdBjWADNF88LoOPaD2MHEDxDXKqkeh60KADzxfbe7RgdAf6ptTYIrHCEARD+ed9cTeAFUZYqAAhJBcfDq+WeKmBFxSkVtq4FVmBieTvHtK/VPB0FbC8tKU4/BJ+8dCCLPWStMwTHcNKsGjD4Een+CoCgeI2EYrg9RtbGWEMV7wFI60FzCpHE/rDIeipuFGDa/uMKgmtL/VhhqwOEDI5emF/EzWLhqV5KZ6Y5jP+ICttQAFcXOoD1NA4AeuwetC58NBKtybjDkAqAJ8mnCrAiKl8MHQj0DrVj2mC2/AFKecoD+HpAkTtuurn4phGQCRUWOPjmSVZO7yvY70ZeS4ZOTHZbIpAyNPlkhHCZsUU1e4xC0RftrR/JNPGzeu+zwcHSKHmOzD5eaDCAk4E+MKP9TdRKMmE6dOnX6p/oNZIa0/Q1L20IAAAAASUVORK5CYII=" alt="">Machop</span>
+          <span class="chip dual" style="--c1:#6390F0;--c2:#96D9D6"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAALVBMVEUAAAAAAAAYQVI5e6RBpOZSUmpaSkFqUhhzxfaLpJSklJTVzcXexYP23qz27uZtpKn+AAAAAXRSTlMAQObYZgAAAu5JREFUWMPtlzFr21AQx61Adr3IgSC7IZEydMjydB6a0egNGdtBSwweM2XpRwh00O61iwYvz1MGLXpQCIaC4XVqx2gIJXQo5DP03pPcBuJIp6FDqQ9sYbgfd/93p3fnXm9rW/tv7Jh1898RwsUHI2MnIubon8ZU4iQG3nPS9EPs0jKKgTHWP09HQASApUL0xdjDQARz9jhmI06Ex2nAwfjAAGIMQAP6AlJMyQIkDY6ojJOB0cj4x+ABrQ4OCPHmeg8FMGqdRZwePlITqoDrH48QdQLef4codKmtKgRDCUAEHDwj9IYhVYMD1rie8V4X4FQvyUCI/kyTgZ4H0TH6X81cKhCdaq0vNbUMPcfF9+1S0wELab3668ASgd2ECgy1rdvhT7cb4MsOgLkABh0BRxUZ/th9SzukCsDXdPpABXwl55LtF+3S7anCvlJSToqFaleCEpYRDBJVLG4GSNGAcKAmSh3eq2L+jlKGKPRVrtQ0U6o1J5SgZxBGGCIvJIYpMpe1AfjWRRxDSIkRiiT75LYDEA7ySnb+OCnumyVYAHwje3qj5upBZhSAI5DLm2KisguXBCzyham2LLJ5I1CWFQCDXKr5hZT4aUjJ+VKWdwCBEVGgd2UtQDmDAC80X5IA9C+XFuBGgJwn+NWg2gJfnwATlchEtgKRrQTmlGC5E5m1ACV6Ywwf81EF86X0eAsQYzOFITe9lGFqLGJuM/CtqgSTi8zDBzSM4Rqwg2sUM+bB2lgTUJpRV8+7FiJ4VYewG0QQmPNtIoL0CRBjjDgK4Hdaz5XvpDVQVkuNWYXigK+s+5l+DrxOxbhcyxbi3C5bcTDEq+1M6+cpBWa1qgBsQBhVgIBj85Js2GT3RrgoQZXTHV4dAOepXZ4ih21afKup/vHWNLi2Nlsf7dFLQxr9MXblrT9f6VV9PNFmwmHoj7HXxK3+Q7zQGHWqbGj9XUPWyFHLfYmkaVBDrpoibCIxypJ1GduMsY5/Qba2tX/XfgGknrzogjUwBgAAAABJRU5ErkJggg==" alt="">Lapras</span>
+          <span class="chip" style="background:#F95587"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAIVBMVEUAAAAQEBBaOQBaOQiDWhCDYgisgymsixjNvSD29qT/5iljXWWPAAAAAXRSTlMAQObYZgAAAhlJREFUWMPtlTFP3EAQhefwSdd6AlI2rnJER22kBCwqTrrCcRdFpgcJS6TKSUig65a7hIc7lCIxncWFLO9XpoAkNPjWbeRX77c7o/d2RqRTp06dOomISH+/JZAtw3ZAymU74H3JdkX1L7mciIhMPLned5LjsD/hoScwq27IOuPXaz9gdl9VJOmq2Ov8gPfVDUmeeAOsSJJX3zx944PufIG9uwfAIRSRs88rgYjRP2BQrgZ6jwAQisx+edjwqSZZbwBWZM8nVtEdWRsAVgIufJx2ZEoHWAlmHnFaG5KuJGBj2Sk8vNs6jqofAGwsXsDawfGr6gTb6ztHIns/PYA8/3h1rZoXxeuA9ChJc11/N9T8oAj9AFHdKg51lKsEpM88SEZFcaQvNJaAzgMIvhSbW8XQzEWiRmBw+gcY8WKUv9mNJSHCpn8QiogExpK8+MDb7bcA4ufvD7gvIkFiTUXCuN2pAebP3+/2d62IJEBUkTB2GtWAfb7VdJ5YkbNzaElOxs4a0jS8IH1kSxnQbtqUC605AdQ09RxckhsZa1iDcVYTC4sEceNfpqFDag2UNQGDuW0yzJApgG0YKJcPQKPPffIcQKiKaRkR9jSdrJgWvARURFTTyMFO52jO6svSqj6WFzlYhTZHL3Pjv69FQCi6YvE8jWYChKuH8PhJQ4vFSqD3tIJedttyWUdsuax7ZUtAtC3QqVOnTv+lfgOeJtsl3sb0QAAAAABJRU5ErkJggg==" alt="">Abra</span>
+          <span class="chip dual" style="--c1:#A6B91A;--c2:#A98FF3"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAALVBMVEUAAAAAAAAxMVJSe8VaSnNiMTlqvc1zYqyDg72cnLS9vebeMTHmYoPu7v//nLQQ2osDAAAAAXRSTlMAQObYZgAAAx5JREFUWMPtljFr20AUx6XQD2C5ggZ30lkkxsWDa+hci6MORzW0SwuemoDmkKRo6hAjqClo6ZYxRoXwIEMLpoMgW7dSiBBUGO4TFPwZ+p7khA45SaVDFz1sozvup/f+753fnaY11lhjjf276a2/BcaaZtRYZnB/82RpmrmZ5WOVO73NpPQP8+d2iz5kEzmzFITB7FDKn4cbEQUwkVIy624AHQTyhmgVwu/hhEzZnS50Zu9Jl4g/ABpnrgoIMzelNz6lETHaFg2FIiYdJae5i/QWGNBIBjMlIN2kh7+tHNALB256maiBlDEkrgsRJHnG0GkJkDDGBrkKAgY0xheUAoOE3QAYEfJMDYQE4HdAMekE4GMZ0CsAyShPCODqYkZZuFBmeVyUpxxAOZi21d0Abo3AlSQ5G6AIBGSCQeJEoAIGMuNOEdO1ZjFLLvKIgkS1+ahmhWy4ZqdzU/QBWS5VgG7LDbHqs9en8+0TAQvOsXgqgPKaE8AeLYP5tn8EvUupStJtTEj0P/34Np/v+T4DwByoAZvnwIpN1wi855M+wKUyIo0SH3CBAEzXX+fzt9+XRwikjhqgkDKONo1f+f7zdfwSIHATZZPapEkCTJe+71+t4y+cg3TUXa0dbgDz+GDiX/2KPwOqttSdrN1DYoUhPXjm7Z9M4xzISgCd4eI99HDueAf2wzh+gRpKIir+QxTS+Ts2ssfx0kQNrKwxFyJWkTB5wrlhdgAWVmk7pr4iAwHnlFw+RgmlDvLtlPEPALs2rUcHs4qu32bMxUov/BPOWQcuxlWnhN6moGDmY74cw6h1qKDu8e7xvs27wwrFm7PHMMyzXSwcHw1FheSi2HAhzrDSDD1EsKgGQingzHHIQwdEZUxY6+gDjIec2ZQlAdVAGoro48ikMkQQ1QBcmYruyML1JgK8RkhSLJ6MWrrRBiHqeAhTufAOWtr9xyCiatHYL1PZ9TwERh1RK609V+54+5rWHfUjENWFI9U73hBPXA/r5tTYGtjeux4d0d4bg7Ea1yC8QJznm3RnqNXZrXSnKV67VfeSpRtaY4011th/tN87Sbunx1Hz4wAAAABJRU5ErkJggg==" alt="">Butterfree</span>
+        </div>
+      </div>
+      <div class="towns">
+        <div class="panel is-target">
+          <div class="bar"><span class="title">Withered Wasteland</span><span class="count">3</span></div>
+          <div class="chips">
+            <span class="chip" style="background:#A6B91A"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAAAAAYWkEge0oxrEFKxSlSYkpq1TF7OUp7g0qs9kHmzZT27ov/QUH/e0H/tDlsaQRjAAAAAXRSTlMAQObYZgAAAbZJREFUGBntwbFrE2EYB+DfJXAk232mg5IMsU3p0CXWQAanu7xQ6I0iXRxSlYI0i8XjA6fg4i1FRRAkWZwKNzUmBI43SwcDId/SLcu1q5OzU7T/wb0OOn3PA8uyLMv6N+I+bsV9CJXe/wIQ/15BqHSz7hc2b9ZXECplP9/uxOvsClJn1z/i6yy7U4eQc5Zl2UrpDqTuZtlKaa2bkCm8ylZKR08OH0Om8DV+p/VT8z2AzE4SHyTR8mhGHkS23ySJjuZHNfIgsk10qKNLVSUPIsXkvKOjVA3Ig0g7OddtHfIkgEw72Io6ERH5kNnbf90K6FalDhFH60bQIvKpDpQ/IF9lk+5XyG/snwLDFAJKfVJqg8wpymaBfO6AOVWtUF/CNXPk6y2YeUyhHsGdTZGvly45fUnEHlzuIl81NcvhlIg8uNxFPufecG5GRD7gTiFRW3zmUcv3gHIXEq4xqupXPeBRFxK9oWGmyQWK1IREbcB8/CLc2GuFTUhUU57O5v7DsDGGiKO+fDSj3cbkWwcyjjGqQkEYeBCqMT+ngMaQck6mTAF7EHNPmHcf4C8Uj59twbIsy/o//gARmZNQERHLaQAAAABJRU5ErkJggg==" alt="">Caterpie</span>
+            <span class="chip dual" style="--c1:#7AC74C;--c2:#A33EA1"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAIVBMVEUAAAAQEBApOUpKWiBaaoNzlKSLrDGUtMWc1UrF5nvuOTEFHMmVAAAAAXRSTlMAQObYZgAAAWJJREFUWMPtlbFqwzAQhpXIeI4ak7mEPEBBIJQxQW7nFItCphrBYT1A8VwMRp0DwXqAvmdPfoGctw76QaDh/7j/TpLNWFZWVlZW1gKVbqG/85JsBlx+nOCFCnSfrIz+BtRQZRjZ8R5vYksE+BhcRAB38nEfJSRARY8AV4RUPIIMWv/4OKyUU4/75lN0WusxhGHnFGVQ3k9y6BD4BgUtoeXjPWCoBLQAGwKgowOXgHYrJeXo+ATKhS4ECQAD4XpwADcDO4CA2GNCAWw7HWAnJW4DYbA4nDQgCVgmDJQuFFSmxUQIDKQby421zSv2TPSzou+tvWAJSXwRb33/hQT5ehcfM2A31AdX2BRpAVDb3+SvT3TA2qttmgsVMNYuq7Cu3/d4EIYOmDr5DblpVplZdGA1+08LPqwC/YJegO0rIcT5mexfW4xzMGc6kPIf6oaeSWD+pyVTmiclRP4LZ2VlZf1b/QGl1W+/JpkjAgAAAABJRU5ErkJggg==" alt="">Oddish</span>
+            <span class="chip" style="background:#A8A77A"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAQEBBKKUFaWlpiSgiLSoukGDmkcwi0c73NrGLNzc3VnNXmWnPmzXPu3rT///9wkIOdAAAAAXRSTlMAQObYZgAAAbNJREFUWMPtlDFLw0AYhi+hoeKUgFILUmohUuyvEDLYpWjpYUD7DxxUKNGl2MDhJ51akCpIwc1NLAiB+wHdhY4dCopkuaXgWi/pD7g70KXcO9wReB/u3sv3fQhpaWlp/ZUA1PxrlGIloEsxHKoB1A9VAItGhBRVCBdCUALMkqsGcPmd/wasFQDKyoAttOBlvcGNJGBRsiztd0nArKQl3R2lm3kkfpZLqJdKZXpclgU+wgql0ShoJa3gijOjJvfTLpm2QgsfygIRkOmk4wMR3yhAJnA/QHPS4au4Q2vnJvcRF4ifAOL+yXz53Lb7wpctKQAl/vBnATtO4oe6EDjhAU7PFnAbBFccEKf2CQwZi4M2Y58g80zWHVvK8w6kgAxj+3l+gpdGwGIAed7cGbI4sfsEY/GvXl/MnRqLSTcq97EMgF7nTpXFm5TmH0tY5k57z9tjNuMVlfeQi3vigYobT2NmV+ibh5AxEAMubgzaM8QB/pGvXgiBHK5XmW1SmgyYjZwwtHF9XzQcZNIosRqG8ACj10+27APYkqPLTo3tWG3kZb+ZrQQYhYIaIJNWS0tLS2uV9QujEKugSNyd7gAAAABJRU5ErkJggg==" alt="">Rattata</span>
+          </div>
+          <div class="ghost-wrap"><span class="chip ghost" style="background:#F7D02C;color:#1B2620;text-shadow:none"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAKlBMVEUAAAAAAAApKSlBQUpiMQhzc4OcUgDFIBjelADmWkH2vSD25lL/9qT////Vai+KAAAAAXRSTlMAQObYZgAAAdlJREFUWMPtlsFqwkAQhjclhB6ztRRReqiHXnoSbz0piLX2JcwliD6A0JsgEuoDlNJTQKzsnkJpSDN9A3PpG3U2ST12J4dCKftjNML/MTObndkwZmRkZPTX5Vb0Wxe/DrQq5nRSHehWBK4PQKtFAWpiU9wctTodygI0SsCZQqfTJgK+P3ZmgAClfltsJ9k+Qf8bKQACQZZlgHptqwC+lhh+ZNleAVz5HRjrAEwGUi4Tr/wX61JaSMzm8wrygo9BD5wjENVKYI3hNDnZbRiqlHJfAHrAuVQmeH9eqooJwB3AABN5egyL+rVF3MrldDtJ5/OwDKADbkSuHJAVgJf7kE1FTmg2lCNKheoOCa7froU2OSo5owLSHeG33s+aJQCuTfKzJhQBsNjRlpEAJHZSrY4tKBNkHeNSqk3XZXUKYEFSApH18D1BfgYAmwZ7CKJhsOsRgHUB7CAMgj5lGM9AIfgJ6wtGA2Ko45UK7lPmUjPGmRThlQr3zCMAM/BxhXz1MLhPAKyiBwCkEH2PkJIlCn+apiKklGDlPQBCYoSQdKBMxUG0o6hx8O9oh53VEAHnqndIj42x/kotpjWYrGgB7Djp5c6R8GgR+Gn5G0cVXwl41bcUIyMjo/+qLw92FGczGN4XAAAAAElFTkSuQmCC" alt="">Pikachu</span></div>
+          <div class="drop-hint">DROP HERE</div>
+        </div>
+        <div class="panel">
+          <div class="bar"><span class="title">Bleak Beach</span><span class="count">2</span></div>
+          <div class="chips">
+            <span class="chip" style="background:#6390F0"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAJ1BMVEUAAAAQEBBaQSBzUhCDMRC0g0HeUkre3t7mvYv/czH/pGL/3r3///+/ml2HAAAAAXRSTlMAQObYZgAAAjVJREFUWMPtlb9r20AUx+9st/OdfyGjDLHrQCCLg3EayOIQozaZ6kKpwUtVyivOHDAUL45qEHgyGMN1K5RAb1ODwHBTId30R/VdnZouuYvWoi8S4sH3o/c93ulESKZMmTJl+g9UAEjnv5DyXRrgXEp5s62eWrsVBAKy+9d/KcEKfJELzu6ry3/ghxIJccq2gXS3pQ1Y8m2hG0hhbFEYiUV9W3Felt8tACBAtyXlGHFpmZrfqOEi7kfByxaAAkDxfEEK33DJukZg1bUA5RECXwm56FJCm0KADfAQ8BYIsBorNsUKmClTFT4AOhAoAKstGk0BRoBGPQ8dFER3A3g2QBUBOPYZLT0EVkXEzZFOftT5ugc4LwF+beUj4Bu3Rkmx/Ocx7gmhCYCqDXDbrfyL5JPctAB9GRPhIqLy8+QOP6Lx+M/7+WFk3q58Hbz9icDHJLkCvwrv5xZgyEvx5EreTJLkDhNxV5kjPVm38nEPv4rJjgbAVbcVG+DERyCW4+SXnoHP+eCVMVFAHBWgs9c7OcLHaTjdtwGVuUJrG4a4r7wzN9qfGfztY+wwVHG7o2LF4WWjYwaoum0RGiituVKlQMVulAsfzkR5iEA4mGsiDGeHJTU0Ajg3fXdCVNB50x9w7kY03LOdlxz9s2O8OcnVGW0YW2wIR/vDPiE5tUuccGY9wyl35mrKNHBNKn2HkUcgmyP54JpQRtnj/xfPXqf8gx2sd9MBe2qaDqA8JbCZZaZMmTJlSqPfcoDQUWh/X4AAAAAASUVORK5CYII=" alt="">Krabby</span>
+            <span class="chip" style="background:#6390F0"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAJFBMVEUAAAAQEBB7e3uDWgCUWhDetFLmpFL23ov/1Ur/5qT/7r3////nESqMAAAAAXRSTlMAQObYZgAAAYtJREFUWMPtlsFKw0AQhhPNA3SpCUVP+gpLRXJqIYReS10Vc1qIQ1/Ai7dCLesbmAcIQm4eetqXc5K16q3/HoX9ep2P+SebyTaKAoFA4N9wyT9PQfgJ4mTkKcSeM8TiCmyRJFHBxCMBCmUpDFOg9RHXN01vgPWJNm9N887GDGwwMa6D2UKZEkqVcWw3c6SBruwDVyu1nZgNJNiLvTGv1t4aM0ISaWtZqD7tfgEKlV1JU7EGRWLhSeXdDUe6AwXK5GO7IqVoAg1Rkmy71b28JlSQXddOXz6WqHDaDbCg+TSAIXInPGeewpKKOSacfycqSJPZ6eNCOghtRlQTETB0rPoGChcioRjBxVSSRhZiIRhyIA0StzxD/XyGC87wEQwqLMwfo44KD4GNujje5I+w649i5teBQ3nNUAJCsj7kYTLgOSW0PpRzIuSDnNEPukbepfjXOEMOTk6XBwO6RfkboJyhhYIM0Rv9G572a4EYuUiHNZj2mwptXOQu6HzcjaXXPR1Jz78CgUAgEBj4AhfM2f9I+JD6AAAAAElFTkSuQmCC" alt="">Psyduck</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="caption">The bank on one side, the six towns on the other. Press a card, drag it into a town, and it stays there, colored by its type. On a phone the towns stack under the bank. Static mockup with real Pokémon; the working version is Phase 1.</p>
+    <h3>The color code, one color per type</h3>
+    <div class="types">
+      <div class="type ink" style="background:#A8A77A">Normal</div>
+      <div class="type" style="background:#EE8130">Fire</div>
+      <div class="type" style="background:#6390F0">Water</div>
+      <div class="type ink" style="background:#F7D02C">Electric</div>
+      <div class="type ink" style="background:#7AC74C">Grass</div>
+      <div class="type ink" style="background:#96D9D6">Ice</div>
+      <div class="type" style="background:#C22E28">Fighting</div>
+      <div class="type" style="background:#A33EA1">Poison</div>
+      <div class="type ink" style="background:#E2BF65">Ground</div>
+      <div class="type" style="background:#A98FF3">Flying</div>
+      <div class="type" style="background:#F95587">Psychic</div>
+      <div class="type ink" style="background:#A6B91A">Bug</div>
+      <div class="type" style="background:#B6A136">Rock</div>
+      <div class="type" style="background:#735797">Ghost</div>
+      <div class="type" style="background:#6F35FC">Dragon</div>
+      <div class="type" style="background:#705746">Dark</div>
+      <div class="type ink" style="background:#B7B7CE">Steel</div>
+      <div class="type" style="background:#D685AD">Fairy</div>
+    </div>
+    <p class="caption">The standard Pokémon type palette, the one every Pokédex uses. All 18 types appear in Pokopia's roster. Dual-type Pokémon get a split card.</p>
+  </section>
+
+  <section>
+    <h2>Pokopia in sixty seconds</h2>
+    <p>Pokémon Pokopia is a Nintendo Switch 2 life-sim released March 5, 2026, developed by KOEI TECMO with Game Freak and published by Nintendo. You play a Ditto transformed into a human, restoring a ruined Kanto with Professor Tangrowth. You befriend Pokémon to copy their moves, reshape terrain, build habitats, and attract Pokémon to settle.</p>
+    <p><strong>The official term is "town," and there are six today.</strong> Five in the base game, one from the Expansion Pass.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>#</th><th>Town</th><th>Based on</th><th>How it unlocks</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="name">Withered Wasteland</td><td>Fuchsia City, drought-stricken</td><td>Start of the game</td></tr>
+          <tr><td class="num">2</td><td class="name">Bleak Beach</td><td>Vermilion City and the S.S. Anne, in darkness</td><td>Finish "Yawn Up a Storm!" in the Wasteland</td></tr>
+          <tr><td class="num">3</td><td class="name">Rocky Ridges</td><td>Pewter City and Mt. Moon, ash-covered</td><td>Same trigger as Bleak Beach</td></tr>
+          <tr><td class="num">4</td><td class="name">Sparkling Skylands</td><td>Celadon and Saffron as floating sky islands</td><td>Main requests in the first three towns, plus Hyper Trainer rank</td></tr>
+          <tr><td class="num">5</td><td class="name">Palette Town</td><td>Sandbox islands, no story; 25 exclusives incl. all Eeveelutions</td><td>After the tutorial</td></tr>
+          <tr><td class="num">6</td><td class="name">Bubbly Basin</td><td>Sunken Cerulean City, mostly underwater</td><td>Expansion Pass Part 1 (Aug 2026), a Bleak Beach request, and the Dive move</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">Dream Islands and Cloud Islands are not towns (resource trips and online build spaces). Some sites count seven or eight "locations" because of them.</p>
+    <div class="pair">
+      <div class="block">
+        <h3>How a Pokémon gets a home</h3>
+        <p>You assemble items into one of about 250 habitat types (four Tall Grass for Bulbasaur, a Picnic Set for Pikachu). A wild Pokémon appears and that habitat becomes its home. You can also build a house, lead the Pokémon there, and ask it to move in, including into another town. Most Pokémon can live in any town. <strong>Where a Pokémon lives is Andrea's choice, so no wiki can answer it.</strong></p>
+      </div>
+      <div class="block">
+        <h3>What the game shows you</h3>
+        <p>Nothing per town. The Pokédex has a Search button that sends Ditto wandering toward the right town, and Nintendo's own patch notes admit it breaks when habitats change. Players report forgetting who was moved where. Only about 20 Pokémon render in a town at once; the rest rotate daily unless housed.</p>
+      </div>
+      <div class="block">
+        <h3>Roster today</h3>
+        <p>357 numbered entries: 300 in the main dex, 50 in Bubbly Basin's own dex, 7 event Pokémon. Three sources agree on every entry. Ten alternate forms share an entry with their base Pokémon. Every one has standard Pokémon types.</p>
+      </div>
+      <div class="block">
+        <h3>What's coming</h3>
+        <p>Expansion Pass Part 2 (late 2026) adds Pokémon and furniture, no town. Part 3 (2027) is planned to add a new town. The roster and the town list must be data, not fixed UI. That is the scalability requirement, and the roadmap proves it matters.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What already exists</h2>
+    <p>The closest tools, all web-based and free. None does drag-and-drop for Pokémon. The only drag-and-drop in this ecosystem is for furniture in town-layout planners.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Tool</th><th>What it does</th><th>Why it isn't the answer</th></tr></thead>
+        <tbody>
+          <tr><td class="name">pokopia.dev Housing Planner</td><td>Pick a region tab, add a building, pick Pokémon from a filter modal</td><td>Building-first, two-step tap picker, five regions (no Bubbly Basin)</td></tr>
+          <tr><td class="name">pokopiawiki.com Location Planner</td><td>Grid of Pokémon; click a location button to assign; save and share</td><td>Click-to-assign, five locations, no type colors, desktop-shaped</td></tr>
+          <tr><td class="name">pokopiacompanion.com</td><td>"My Houses" with an area tag and residents</td><td>House-first, picker-based</td></tr>
+          <tr><td class="name">PokoTraqr</td><td>Per-area stats, housing by kit</td><td>Account required, no assignment board</td></tr>
+          <tr><td class="name">pokopiamap.com planner</td><td>Text notes of which habitat each Pokémon occupies</td><td>A log, not a board</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Phone apps on the App Store and Google Play (Pokopedia, Pokodex, PocketDex, Poko.guide, CTA Dex, and a few companions) are all befriended checklists. None assigns a Pokémon to a town. A paid Notion database on Ko-fi tracks "homing," but it is a desktop Notion workflow.</p>
+    <h3>What we reuse instead of rebuilding</h3>
+    <ul>
+      <li><strong>Our own roster pull.</strong> 367 rows, the 357 entries plus the 10 alternate forms flagged as such, from Serebii, Bulbapedia and Nintendo Life, with national number, types, areas and habitat text. This is the master list.</li>
+      <li><strong>kjuhwa/Pokopia on GitHub.</strong> One JSON file, generated August 30, 2026 from Serebii and PokéAPI: types, dex category, habitats with the towns each works in, rarity, time of day, weather, moods and favorites. Missing three entries (Farfetch'd, Mime Jr., Mr. Mime), so it is the detail source joined to the master list, not the roster itself.</li>
+      <li><strong>JEschete/PokopiaPlanning CSV.</strong> 367 rows with per-town Yes/No flags. The cross-check.</li>
+      <li><strong>PokéAPI sprites</strong> for the little pictures on each card. Verified working.</li>
+      <li><strong>Serebii's Pokopia section</strong> as the canonical source if either dataset ever needs rebuilding.</li>
+    </ul>
+    <p class="caption">Neither GitHub dataset states a license. For a private app used by two people that is fine. If this ever goes public, rebuild the data from Serebii and PokéAPI directly.</p>
+  </section>
+
+  <section>
+    <h2>What we'll build</h2>
+    <p>Named <strong>PokoPal</strong> on September 6, 2026; the working name was Pokopia Homes. The icon is Taylor's: a smiling purple book with leaf ears.</p>
+    <div class="pair">
+      <div class="block">
+        <h3>The bank</h3>
+        <p>Every Pokémon not yet placed, as a compact card: sprite, name, colored by type. A search box and type filter chips at the top. A counter reads "142 of 357 placed."</p>
+      </div>
+      <div class="block">
+        <h3>The towns</h3>
+        <p>Six boxes, one per town, each showing its residents and a count. On a phone they stack under the bank or swipe as a strip. Boxes fold closed when you want more of the bank.</p>
+      </div>
+      <div class="block">
+        <h3>The interaction, as Andrea described it</h3>
+        <p>Press a card, drag it, drop it in a town. It stays. Drag it to another town to move it, which is also what you do in the game when you rehouse a Pokémon. Drag it back to the bank to unassign. Cards stay draggable forever, unlike Procreate. Tap-a-card-then-tap-a-town works as a fallback on tiny screens.</p>
+      </div>
+      <div class="block">
+        <h3>Saves itself, scales itself</h3>
+        <p>Every drop is saved on the phone instantly. Backup exports the board as a small file; Restore loads it. No account. The roster and the town list are two data files, so the 2027 town or the Part 2 Pokémon are data edits with no code change.</p>
+      </div>
+    </div>
+    <h3>Other pain points the same board can absorb later</h3>
+    <p>The data file already carries these, so each is a small addition.</p>
+    <ul>
+      <li>Befriended yet or not, the checklist every other app does.</li>
+      <li>Which house a Pokémon lives in, not just which town.</li>
+      <li>The habitat each Pokémon needs, with materials. Tap a card, see "Four Tall Grass."</li>
+      <li>Time-of-day and weather conditions for rare spawns.</li>
+      <li>Per-town headcount against the roughly 20-visible limit.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Technical decisions, made</h2>
+    <div class="pair">
+      <div class="block">
+        <h3>A web app on the home screen, not a native app</h3>
+        <p>Works on iPhone and Android, needs no App Store review or the $99-a-year developer account, updates instantly, and this Mac has no full Xcode, so a native app couldn't even be tested here. Native buys nothing for a drag-and-drop board.</p>
+      </div>
+      <div class="block">
+        <h3>Plain HTML, CSS and JavaScript, one file</h3>
+        <p>Drag uses pointer events, which behave with touch on iOS Safari, unlike the browser's built-in drag-and-drop. Storage is the browser's local storage plus the backup file. A manifest and service worker make it installable and usable offline, on the couch with no signal.</p>
+      </div>
+      <div class="block">
+        <h3>Hosting on GitHub Pages, free</h3>
+        <p>One-time setup: sign into GitHub on this Mac. Until then the prototype previews here in the app's browser, travels as a file, or publishes as a private Claude page.</p>
+      </div>
+      <div class="block">
+        <h3>Testing on real glass</h3>
+        <p>The browser pane here at iPhone size for layout, then Andrea's actual iPhone for the drag feel. The drag feel is the whole product; nothing is called done until it has been dragged on a phone.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The phases</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Phase</th><th>What ships</th><th>Effort</th></tr></thead>
+        <tbody>
+          <tr><td class="name">0 · Data</td><td><strong>Built September 6, 2026.</strong> pokemon.json (357 entries plus 10 flagged alternate forms: dex, name, types, category, sprite, habitats) and towns.json (six towns), built from the datasets above; counts already cross-checked against three sources</td><td>Half a session</td></tr>
+          <tr><td class="name">1 · Board</td><td><strong>Built September 6, 2026.</strong> The one-screen app: bank, six towns, drag-and-drop, type colors, counter, auto-save</td><td>One session</td></tr>
+          <tr><td class="name">2 · Install</td><td><strong>Built September 6, 2026.</strong> A service worker caches the page, the data and all 364 sprites, so the app works with no signal and shows "update ready, Reload" on new releases; a ⋯ menu with Back up (share or save a small file, or copy as text), Restore (file or pasted text, Undo offered), Add to Home Screen steps and Clear the board; a publish script for GitHub Pages. The icon, the manifest and the home-screen name came with the PokoPal rename the same day</td><td>One session</td></tr>
+          <tr><td class="name">3 · Share</td><td>Optional: Taylor's phone and Andrea's phone showing the same board. Simplest: a Backup file sent by text. Fuller: a tiny free backend. Decide after a week of use</td><td>Half a session</td></tr>
+          <tr><td class="name">4 · Grow</td><td>The next pain point from the list, one at a time, as Andrea asks</td><td>Ongoing</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Things to know</h2>
+    <ul>
+      <li><strong>Pokémon names and sprites are Nintendo's property.</strong> Fine for a private tool. Don't publish it to the App Store or sell it.</li>
+      <li><strong>Andrea's phone.</strong> The plan assumes iPhone. Android works the same way with Chrome.</li>
+      <li><strong>Roster drift.</strong> Part 2 lands late 2026 with new Pokémon; refresh the data file when it does. Placements are keyed by Pokémon id, so a refresh never loses her board.</li>
+      <li><strong>Backups.</strong> iPhone can clear a website's storage after long disuse; a home-screen install is exempt, and the Backup file covers the rest.</li>
+    </ul>
+  </section>
+
+  <section class="kick">
+    <div class="eyebrow">Kick it off</div>
+    <div class="say">"Build PokoPal, phase 3."</div>
+    <p>Phases 0, 1 and 2 were built on September 6, 2026. Left by hand: sign this Mac into GitHub once (<span class="mono">gh auth login</span>), run <span class="mono">tools/publish.sh</span>, then open the address on Andrea's iPhone, Share, Add to Home Screen, and drag a few Pokémon on real glass. After a week of use, that sentence starts the shared-board phase.</p>
+  </section>
+
+  <hr>
+  <p class="sources">Game facts verified September 6, 2026 against Nintendo's product and support pages, Serebii's Pokopia section (locations, habitats, Basin dex, patch notes), Bulbapedia, Game8, Nintendo Life, VGC, Kotaku, Screen Rant and GameRant. Tools checked at pokopia.dev, pokopiawiki.com, pokopiacompanion.com, pokotraqr.com, pokopiamap.com, the App Store and Google Play, and GitHub (kjuhwa/Pokopia, JEschete/PokopiaPlanning, moewing/pokopia-planner, QuesoCaliente/pokopiapi). The full URL list is in the project folder under research/sources.md.</p>
+</main>

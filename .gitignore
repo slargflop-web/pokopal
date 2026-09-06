@@ -1,0 +1,5 @@
+.DS_Store
+dist/
+__pycache__/
+# third-party dataset copies (no licence stated): kept on this Mac, not published
+research/sources/

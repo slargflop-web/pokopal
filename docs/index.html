@@ -1,0 +1,1120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F1F6F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121915" media="(prefers-color-scheme: dark)">
+<title>PokoPal</title>
+<meta name="application-name" content="PokoPal">
+<meta name="apple-mobile-web-app-title" content="PokoPal">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap">
+<style>
+  :root {
+    --ground: #F1F6F0;
+    --surface: #FFFFFF;
+    --surface-2: #E8F0E9;
+    --ink: #1B2620;
+    --ink-2: #4A5950;
+    --muted: #6B7A71;
+    --line: #D3DED5;
+    --accent: #7E4FAD;
+    --accent-soft: #EFE7F7;
+    --shadow: 0 1px 2px rgba(27, 38, 32, 0.08), 0 6px 18px rgba(27, 38, 32, 0.08);
+    --card-ink-dark: #16201A;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --display: "Fredoka", "Trebuchet MS", "Segoe UI", -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121915;
+      --surface: #1A231E;
+      --surface-2: #232E28;
+      --ink: #E7EEE8;
+      --ink-2: #C3CFC7;
+      --muted: #96A69B;
+      --line: #2E3B34;
+      --accent: #C4A3E3;
+      --accent-soft: #2B2338;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 22px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121915;
+    --surface: #1A231E;
+    --surface-2: #232E28;
+    --ink: #E7EEE8;
+    --ink-2: #C3CFC7;
+    --muted: #96A69B;
+    --line: #2E3B34;
+    --accent: #C4A3E3;
+    --accent-soft: #2B2338;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 22px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    display: flex;
+    flex-direction: column;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.35;
+    -webkit-font-smoothing: antialiased;
+    touch-action: manipulation;
+  }
+  body.dragging { cursor: grabbing; }
+  body.dragging * { cursor: grabbing !important; }
+  button { font: inherit; color: inherit; }
+
+  /* ---------- header ---------- */
+  .top {
+    flex: none;
+    padding: calc(8px + env(safe-area-inset-top)) 10px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .row1 { display: flex; align-items: baseline; gap: 10px; }
+  h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    white-space: nowrap;
+  }
+  h1 .mark { width: 26px; height: 26px; vertical-align: -6px; margin-right: 7px; pointer-events: none; -webkit-user-drag: none; }
+  .counter { margin-left: auto; font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+  .counter b { color: var(--ink); font-size: 15px; }
+  .row2 { position: relative; display: flex; align-items: center; }
+  #q {
+    width: 100%;
+    height: 38px;
+    padding: 0 36px 0 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 16px;   /* iOS zooms into inputs smaller than 16px */
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  #q:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  #q::-webkit-search-cancel-button { display: none; }
+  #clearQ {
+    position: absolute; right: 4px; top: 4px;
+    width: 30px; height: 30px; border-radius: 10px; border: 0;
+    background: var(--surface-2); color: var(--ink-2); font-size: 18px; line-height: 1;
+    cursor: pointer;
+  }
+  .chips {
+    display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 4px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none;
+    height: 26px; padding: 0 10px; border-radius: 999px; border: 0;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    opacity: 0.55; transition: opacity .12s, transform .12s;
+  }
+  .chips.none-active .chip, .chip.active { opacity: 1; }
+  .chip.active { outline: 3px solid var(--ink); outline-offset: 1px; transform: scale(1.04); }
+
+  /* ---------- board ---------- */
+  .board {
+    flex: 1; min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas: "view" "dock";
+    gap: 6px;
+    padding: 0 8px 0;
+  }
+  .pane {
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    position: relative;
+  }
+  .bank, .towns { grid-area: view; }
+  body:not([data-view="bank"]) .bank { display: none; }
+  body[data-view="bank"] .towns { display: none; }
+
+  .pane-head {
+    position: sticky; top: 0; z-index: 2;
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    font-family: var(--display); font-weight: 600; font-size: 15px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .pane-head .count {
+    margin-left: auto; font-size: 12px; font-weight: 700;
+    color: var(--ink-2); background: var(--surface-2);
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .pane.over { box-shadow: inset 0 0 0 3px var(--accent); }
+  .cards {
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+    padding: 8px;
+    min-height: 60px;
+  }
+  .empty {
+    padding: 18px 16px 24px; text-align: center; color: var(--muted); font-size: 13px;
+  }
+  .firstrun {
+    margin: 8px; padding: 10px 12px; border-radius: 12px;
+    background: var(--accent-soft); color: var(--ink); font-size: 13px;
+  }
+
+  /* ---------- cards ---------- */
+  .card {
+    position: relative;
+    display: inline-flex; align-items: center; gap: 2px;
+    height: 34px; max-width: 100%;
+    padding: 0 10px 0 2px;
+    border-radius: 11px;
+    background: var(--c1);
+    color: var(--ink-on);
+    box-shadow: inset 0 -4px 0 var(--c2), 0 1px 2px rgba(0, 0, 0, 0.14);
+    font-weight: 700; font-size: 13px; line-height: 1;
+    white-space: nowrap;
+    cursor: grab;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+    touch-action: pan-y;
+    transition: transform .12s, opacity .12s;
+  }
+  .card img {
+    width: 40px; height: 40px;
+    margin: -3px -5px -3px -3px;
+    pointer-events: none; -webkit-user-drag: none;
+    flex: none;
+  }
+  .card .name { overflow: hidden; text-overflow: ellipsis; padding-bottom: 3px; }
+  .card em { font-style: normal; font-weight: 600; font-size: 11px; opacity: 0.85; margin-left: 4px; }
+  .card.selected { outline: 3px solid var(--accent); outline-offset: 2px; transform: scale(1.04); }
+  .card.lifting { opacity: 0.3; }
+  .card.ghost {
+    position: fixed; left: 0; top: 0; z-index: 100;
+    pointer-events: none;
+    box-shadow: inset 0 -4px 0 var(--c2), 0 10px 26px rgba(0, 0, 0, 0.3);
+    transition: none;
+  }
+
+  /* ---------- towns (wide layout shows all six boxes) ---------- */
+  .towns { padding: 0; }
+  .town {
+    display: none;
+    flex-direction: column;
+    border-radius: 14px;
+    border: 2px solid var(--town);
+    background: var(--town-soft);
+    min-height: 60px;
+  }
+  .town.open { display: flex; border: 0; border-radius: 0; background: transparent; min-height: 100%; }
+  .town-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    font-family: var(--display); font-weight: 600; font-size: 15px;
+    cursor: pointer;
+    user-select: none; -webkit-user-select: none;
+  }
+  .town.open .town-head {
+    position: sticky; top: 0; z-index: 2;
+    padding: 8px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .town-emoji { font-size: 16px; }
+  .town-count {
+    margin-left: auto;
+    background: var(--town); color: #fff;
+    border-radius: 999px; padding: 2px 9px;
+    font-size: 12px; font-weight: 800;
+  }
+  .town-fold { display: none; color: var(--muted); font-size: 12px; margin-left: 4px; transition: transform .15s; }
+  .town.folded .town-fold { transform: rotate(-90deg); }
+  .town.folded .town-cards, .town.folded .town-empty { display: none; }
+  .town-cards { padding: 4px 8px 8px; }
+  .town .empty { padding: 4px 12px 14px; }
+  .town.over { background: var(--town-strong); box-shadow: 0 0 0 3px var(--town); }
+  .town.open.over { box-shadow: inset 0 0 0 3px var(--town); }
+
+  /* ---------- dock (phone) ---------- */
+  .dock {
+    grid-area: dock;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 0 0 calc(8px + env(safe-area-inset-bottom));
+  }
+  .tile {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    height: 50px;
+    border-radius: 12px;
+    border: 2px solid var(--town, var(--line));
+    background: var(--town-soft, var(--surface));
+    color: var(--ink);
+    font-family: var(--display); font-weight: 600; font-size: 13px; line-height: 1.1;
+    cursor: pointer;
+    user-select: none; -webkit-user-select: none;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .tile .lbl { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .tile .n { font-size: 11px; font-weight: 700; opacity: 0.75; }
+  .tile.tile-bank { grid-column: 1 / -1; flex-direction: row; height: 38px; gap: 10px; }
+  .tile.active { background: var(--town, var(--accent)); color: #fff; border-color: var(--town, var(--accent)); }
+  .tile.active .n { opacity: 0.9; }
+  .tile.over { transform: scale(1.06); box-shadow: 0 0 0 3px var(--town, var(--accent)); z-index: 1; }
+
+  /* ---------- status strip (toast / tap-to-move hint) ---------- */
+  .status {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    top: calc(env(safe-area-inset-top) + 8px);
+    z-index: 200;
+    display: flex; align-items: center; gap: 10px;
+    max-width: calc(100vw - 24px);
+    padding: 9px 12px 9px 14px;
+    border-radius: 12px;
+    background: var(--ink); color: var(--ground);
+    font-size: 13px; font-weight: 600;
+    box-shadow: var(--shadow);
+    animation: pop .16s ease-out;
+  }
+  .status button {
+    border: 0; border-radius: 8px; padding: 5px 9px;
+    background: rgba(255, 255, 255, 0.18); color: inherit;
+    font-weight: 800; cursor: pointer;
+  }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+  /* ---------- menu button and sheets (back up, restore, install) ---------- */
+  .more {
+    flex: none; align-self: center; margin-left: 4px;
+    width: 34px; height: 34px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+    font-size: 20px; font-weight: 700; line-height: 1; cursor: pointer;
+  }
+  .more:active { background: var(--surface-2); }
+  .sheet {
+    position: fixed; inset: auto 0 0 0;
+    width: 100%; max-width: 100%; max-height: 88vh; max-height: 88dvh;
+    margin: 0; padding: 0; border: 0;
+    border-radius: 20px 20px 0 0;
+    background: var(--surface); color: var(--ink);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+    overflow: auto;
+  }
+  .sheet::backdrop { background: rgba(0, 0, 0, 0.35); }
+  .sheet-head {
+    position: sticky; top: 0; z-index: 1;
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px 10px 16px;
+    font-family: var(--display); font-weight: 600; font-size: 17px;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  .sheet-head .mark { width: 22px; height: 22px; }
+  .x {
+    margin-left: auto; width: 32px; height: 32px; border-radius: 10px; border: 0;
+    background: var(--surface-2); color: var(--ink-2); font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .sheet-body { display: flex; flex-direction: column; gap: 8px; padding: 12px 12px calc(16px + env(safe-area-inset-bottom)); }
+  .act {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+    width: 100%; padding: 11px 12px; border-radius: 12px; text-align: left;
+    border: 1px solid var(--line); background: var(--surface-2); cursor: pointer;
+  }
+  .act:active { filter: brightness(0.96); }
+  .act b { font-size: 15px; }
+  .act span { font-size: 12px; color: var(--ink-2); line-height: 1.3; }
+  .act.danger b { color: #B3261E; }
+  .act.primary { background: var(--accent); border-color: var(--accent); align-items: center; }
+  .act.primary b { color: var(--ground); }
+  .subrow { display: flex; gap: 16px; padding: 0 4px; margin-top: -2px; }
+  .sub { border: 0; background: none; padding: 4px 0; color: var(--accent); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .about { padding: 6px 4px 0; font-size: 12px; color: var(--muted); line-height: 1.45; white-space: pre-line; }
+  .hint { margin: 0 2px; font-size: 13px; color: var(--ink-2); }
+  #textArea {
+    width: 100%; min-height: 150px; padding: 10px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--ground); color: var(--ink); font: 12px/1.4 ui-monospace, Menlo, monospace; resize: vertical;
+  }
+  @media (min-width: 860px) {
+    .sheet { inset: 0; margin: auto; width: 440px; max-height: 80vh; border-radius: 20px; }
+  }
+
+  /* ---------- wide layout ---------- */
+  @media (min-width: 860px) {
+    .top { padding: 12px 14px 8px; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+    .row1 { flex: none; }
+    .row2 { flex: 1 1 260px; }
+    .chips { flex: 1 1 100%; }
+    .board {
+      grid-template-columns: minmax(320px, 2fr) 3fr;
+      grid-template-rows: minmax(0, 1fr);
+      grid-template-areas: "bank towns";
+      gap: 10px;
+      padding: 0 14px 14px;
+    }
+    .bank { grid-area: bank; }
+    .towns {
+      grid-area: towns;
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: start;
+      gap: 10px;
+      padding: 10px;
+    }
+    body:not([data-view="bank"]) .bank { display: block; }
+    .town, .town.open {
+      display: flex;
+      border: 2px solid var(--town); border-radius: 14px; background: var(--town-soft); min-height: 60px;
+    }
+    .town.open .town-head { position: static; padding: 8px 10px; background: transparent; border: 0; }
+    .town.open.over { box-shadow: 0 0 0 3px var(--town); }
+    .town-fold { display: inline-block; }
+    .dock { display: none; }
+    .status { top: auto; bottom: 22px; }
+  }
+  @media (min-width: 1280px) {
+    .towns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body data-view="bank">
+
+<header class="top">
+  <div class="row1">
+    <h1><img class="mark" src="icons/pokopal-mark.png" alt="" width="26" height="26">PokoPal</h1>
+    <div class="counter" id="counter"><b>0</b> of 0 placed</div>
+    <button class="more" id="moreBtn" type="button" aria-label="Menu" title="Back up, restore, add to home screen">⋯</button>
+  </div>
+  <div class="row2">
+    <input id="q" type="search" placeholder="Search Pokémon, type or number" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+    <button id="clearQ" aria-label="Clear search" hidden>×</button>
+  </div>
+  <div class="chips none-active" id="chips"></div>
+</header>
+
+<main class="board" id="board">
+  <section class="pane bank" id="bank" data-target="bank">
+    <div class="pane-head"><span>Not placed yet</span><span class="count" id="bankCount">0</span></div>
+    <div class="firstrun" id="firstrun" hidden>Press and hold a Pokémon, then drag it onto the town it lives in. Or tap it, then tap the town.</div>
+    <div class="cards" id="bankCards"></div>
+    <div class="empty" id="bankEmpty" hidden></div>
+  </section>
+  <section class="pane towns" id="towns"></section>
+  <nav class="dock" id="dock"></nav>
+</main>
+
+<div class="status" id="status" hidden><span id="statusText"></span><button id="statusBtn" hidden></button></div>
+
+<dialog class="sheet" id="sheet" aria-label="PokoPal menu">
+  <div class="sheet-head"><img class="mark" src="icons/pokopal-mark.png" alt="" width="22" height="22"><span>PokoPal</span><button class="x" id="sheetClose" type="button" aria-label="Close">×</button></div>
+  <div class="sheet-body">
+    <button class="act" id="backupBtn" type="button"><b>Back up</b><span>Saves the board as a small file to keep in Files, AirDrop or text to someone.</span></button>
+    <button class="act" id="restoreBtn" type="button"><b>Restore</b><span>Loads a backup file in place of the board. Undo is offered.</span></button>
+    <div class="subrow"><button class="sub" id="copyBtn" type="button">Copy backup as text</button><button class="sub" id="pasteBtn" type="button">Paste backup text</button></div>
+    <button class="act" id="installBtn" type="button" hidden><b>Add to Home Screen</b><span id="installHow"></span></button>
+    <button class="act danger" id="clearBtn" type="button"><b>Clear the board</b><span>Sends everyone back to Not placed. Undo is offered.</span></button>
+    <div class="about" id="about"></div>
+  </div>
+  <input type="file" id="restoreFile" accept=".json,application/json,text/plain" hidden>
+</dialog>
+
+<dialog class="sheet" id="textDlg" aria-label="Backup text">
+  <div class="sheet-head"><span id="textTitle">Backup text</span><button class="x" id="textClose" type="button" aria-label="Close">×</button></div>
+  <div class="sheet-body">
+    <p class="hint" id="textHint"></p>
+    <textarea id="textArea" rows="7" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+    <button class="act primary" id="textGo" type="button"><b id="textGoLabel">Load</b></button>
+  </div>
+</dialog>
+
+<!--#data-->
+<script>
+(() => {
+'use strict';
+
+// ---------- type colours (standard Pokémon palette); text colour picked for contrast ----------
+const TYPE = {
+  Normal: '#A8A77A', Fire: '#EE8130', Water: '#6390F0', Electric: '#F7D02C', Grass: '#7AC74C',
+  Ice: '#96D9D6', Fighting: '#C22E28', Poison: '#A33EA1', Ground: '#E2BF65', Flying: '#A98FF3',
+  Psychic: '#F95587', Bug: '#A6B91A', Rock: '#B6A136', Ghost: '#735797', Dragon: '#6F35FC',
+  Dark: '#705746', Steel: '#B7B7CE', Fairy: '#D685AD',
+};
+const FALLBACK_TYPE = '#9AA39C';
+function lum(hex) {
+  const v = [1, 3, 5].map(i => parseInt(hex.substr(i, 2), 16) / 255)
+    .map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+}
+function inkFor(hex) {
+  const L = lum(hex);
+  return (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.05) ? '#FFFFFF' : '#16201A';
+}
+function alpha(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
+
+// ---------- state ----------
+const KEY = 'pokopal:v1';
+const LEGACY_KEY = 'pokopia-homes:v1';   // the storage key before the rename to PokoPal (September 6, 2026)
+const TOTAL_LABEL = n => `<b>${n.placed}</b> of ${n.total} placed`;
+let TOWNS = [];                 // ordered town records
+const TOWN = new Map();         // id -> town
+const POKE = new Map();         // id -> pokemon
+const CARD = new Map();         // id -> card element
+const TOWN_CARDS = new Map();   // townId -> cards container
+const TOWN_EL = new Map();      // townId -> .town element
+const TILE = new Map();         // 'bank' | townId -> tile element
+let state = { placements: {}, folded: {}, view: 'bank', placedOnce: false };
+let filter = { q: '', type: '' };
+let selected = null;
+let lastMove = null;
+
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY) || localStorage.getItem(LEGACY_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (s && typeof s === 'object') {
+      state.placements = (s.placements && typeof s.placements === 'object') ? s.placements : {};
+      state.folded = (s.folded && typeof s.folded === 'object') ? s.folded : {};
+      state.view = typeof s.view === 'string' ? s.view : 'bank';
+      state.placedOnce = !!s.placedOnce;
+      state.offlineReadyShown = !!s.offlineReadyShown;
+    }
+  } catch (e) { /* storage unavailable or corrupt: start empty */ }
+}
+function save() {
+  try { state.updatedAt = new Date().toISOString(); localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch (e) { /* private mode or quota: the board still works for this session */ }
+}
+
+// ---------- data ----------
+async function loadData() {
+  if (window.POKOPIA_DATA) return window.POKOPIA_DATA;
+  const [t, p] = await Promise.all([
+    fetch('data/towns.json').then(r => r.json()),
+    fetch('data/pokemon.json').then(r => r.json()),
+  ]);
+  return { towns: t.towns, pokemon: p.pokemon };
+}
+
+// ---------- building the board ----------
+function buildTowns(towns) {
+  TOWNS = towns.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+  const townsPane = $('towns');
+  const dock = $('dock');
+
+  const bankTile = el('button', 'tile tile-bank');
+  bankTile.type = 'button';
+  bankTile.dataset.target = 'bank';
+  bankTile.append(Object.assign(el('span', 'lbl'), { textContent: '🎒 Not placed' }), el('span', 'n', '0'));
+  dock.append(bankTile);
+  TILE.set('bank', bankTile);
+
+  for (const t of TOWNS) {
+    TOWN.set(t.id, t);
+    const color = t.color || '#7E4FAD';
+    const box = el('article', 'town');
+    box.dataset.target = t.id;
+    box.style.setProperty('--town', color);
+    box.style.setProperty('--town-soft', alpha(color, 0.10));
+    box.style.setProperty('--town-strong', alpha(color, 0.28));
+    if (state.folded[t.id]) box.classList.add('folded');
+
+    const head = el('header', 'town-head');
+    head.append(el('span', 'town-emoji', t.emoji || '🏠'), el('span', 'town-name', t.name),
+                el('span', 'town-count', '0'), el('span', 'town-fold', '▾'));
+    head.title = [t.basedOn, t.unlock ? `Unlocks: ${t.unlock}` : ''].filter(Boolean).join(' · ');
+    const cards = el('div', 'cards town-cards');
+    const empty = el('div', 'empty town-empty', 'Nobody lives here yet.');
+    box.append(head, cards, empty);
+    townsPane.append(box);
+    TOWN_EL.set(t.id, box);
+    TOWN_CARDS.set(t.id, cards);
+
+    const tile = el('button', 'tile');
+    tile.type = 'button';
+    tile.dataset.target = t.id;
+    tile.style.setProperty('--town', color);
+    tile.style.setProperty('--town-soft', alpha(color, 0.12));
+    tile.append(Object.assign(el('span', 'lbl'), { textContent: `${t.emoji || '🏠'} ${t.short || t.name}` }), el('span', 'n', '0'));
+    tile.title = t.name;
+    dock.append(tile);
+    TILE.set(t.id, tile);
+  }
+}
+
+function buildCards(pokemon) {
+  const groupOrder = { main: 0, basin: 1, event: 2 };
+  const list = pokemon.slice().sort((a, b) =>
+    (groupOrder[a.dexGroup] ?? 9) - (groupOrder[b.dexGroup] ?? 9) || (a.dexNo - b.dexNo) || (a.isAltForm - b.isAltForm));
+  const bank = $('bankCards');
+  list.forEach((p, i) => {
+    POKE.set(p.id, p);
+    const c1 = TYPE[p.types[0]] || FALLBACK_TYPE;
+    const c2 = p.types[1] ? (TYPE[p.types[1]] || FALLBACK_TYPE) : c1;
+    const card = el('div', 'card');
+    card.dataset.id = p.id;
+    card.dataset.i = i;
+    card.style.setProperty('--c1', c1);
+    card.style.setProperty('--c2', c2);
+    card.style.setProperty('--ink-on', inkFor(c1));
+    const img = el('img');
+    img.src = p.sprite; img.alt = ''; img.draggable = false; img.loading = 'lazy'; img.decoding = 'async';
+    const name = el('span', 'name', p.displayName || p.name);
+    if (p.formTag) name.append(el('em', null, p.formTag));
+    card.append(img, name);
+    card.title = `${p.name} · ${p.types.join(' / ')} · ${p.dex}`;
+    card.dataset.search = [p.name, p.displayName, p.species, p.form, p.aka, p.types.join(' '), p.dex, '#' + String(p.dexNo).padStart(3, '0'), String(p.dexNo)]
+      .filter(Boolean).join(' ').toLowerCase();
+    CARD.set(p.id, card);
+    const townId = state.placements[p.id];
+    (townId && TOWN_CARDS.has(townId) ? TOWN_CARDS.get(townId) : bank).append(card);
+  });
+}
+
+function buildChips() {
+  const chips = $('chips');
+  for (const t of Object.keys(TYPE)) {
+    const b = el('button', 'chip', t);
+    b.type = 'button';
+    b.dataset.type = t;
+    b.style.background = TYPE[t];
+    b.style.color = inkFor(TYPE[t]);
+    b.addEventListener('click', () => setTypeFilter(filter.type === t ? '' : t));
+    chips.append(b);
+  }
+}
+
+// ---------- placing ----------
+function insertSorted(container, card) {
+  const i = +card.dataset.i;
+  for (const kid of container.children) {
+    if (+kid.dataset.i > i) { container.insertBefore(card, kid); return; }
+  }
+  container.append(card);
+}
+function nameOf(id) { const p = POKE.get(id); return p ? (p.displayName + (p.formTag ? ` (${p.formTag})` : '')) : id; }
+
+function place(id, townId, opts = {}) {
+  const from = TOWN.has(state.placements[id]) ? state.placements[id] : null;
+  const to = townId && TOWN.has(townId) ? townId : null;
+  if (from === to) return false;
+  if (to) state.placements[id] = to; else delete state.placements[id];
+  state.placedOnce = true;
+  insertSorted(to ? TOWN_CARDS.get(to) : $('bankCards'), CARD.get(id));
+  save();
+  refresh();
+  if (!opts.silent) {
+    lastMove = { id, from, to };
+    showStatus(`${nameOf(id)} → ${to ? TOWN.get(to).name : 'Not placed'}`, 'Undo', () => {
+      if (lastMove) { place(lastMove.id, lastMove.from, { silent: true }); lastMove = null; }
+      hideStatus();
+    }, 2600);
+  }
+  return true;
+}
+
+// ---------- counts, filter, views ----------
+function refresh() {
+  let placed = 0;
+  for (const [id, t] of Object.entries(state.placements)) if (TOWN.has(t) && POKE.has(id)) placed++;
+  $('counter').innerHTML = TOTAL_LABEL({ placed, total: POKE.size });
+  const bankN = $('bankCards').children.length;
+  $('bankCount').textContent = bankN;
+  TILE.get('bank').querySelector('.n').textContent = bankN;
+  for (const t of TOWNS) {
+    const n = TOWN_CARDS.get(t.id).children.length;
+    TOWN_EL.get(t.id).querySelector('.town-count').textContent = n;
+    TILE.get(t.id).querySelector('.n').textContent = n;
+    TOWN_EL.get(t.id).querySelector('.town-empty').hidden = n > 0;
+  }
+  $('firstrun').hidden = state.placedOnce || bankN === 0;
+  applyFilter();
+}
+
+function applyFilter() {
+  const q = filter.q, type = filter.type;
+  let visibleBank = 0;
+  for (const [id, card] of CARD) {
+    const p = POKE.get(id);
+    const ok = (!q || card.dataset.search.includes(q)) && (!type || p.types.includes(type));
+    card.hidden = !ok;
+    if (ok && card.parentElement === $('bankCards')) visibleBank++;
+  }
+  const bankN = $('bankCards').children.length;
+  const empty = $('bankEmpty');
+  if (bankN === 0) { empty.textContent = 'Everyone has a home 🎉'; empty.hidden = false; }
+  else if (visibleBank === 0) { empty.textContent = q ? `No unplaced Pokémon match “${filter.qRaw}”.` : `No unplaced ${type}-type Pokémon.`; empty.hidden = false; }
+  else empty.hidden = true;
+  for (const t of TOWNS) {
+    const cards = TOWN_CARDS.get(t.id);
+    const n = cards.children.length;
+    const vis = [...cards.children].filter(c => !c.hidden).length;
+    const e = TOWN_EL.get(t.id).querySelector('.town-empty');
+    if (n > 0 && vis === 0) { e.textContent = 'No match here.'; e.hidden = false; }
+    else if (n > 0) e.hidden = true;
+    else { e.textContent = 'Nobody lives here yet.'; e.hidden = false; }
+  }
+}
+function setTypeFilter(t) {
+  filter.type = t;
+  const chips = $('chips');
+  chips.classList.toggle('none-active', !t);
+  for (const c of chips.children) c.classList.toggle('active', c.dataset.type === t);
+  applyFilter();
+}
+function setView(v) {
+  if (v !== 'bank' && !TOWN.has(v)) v = 'bank';
+  state.view = v;
+  document.body.dataset.view = v;
+  for (const [id, box] of TOWN_EL) box.classList.toggle('open', id === v);
+  for (const [id, tile] of TILE) tile.classList.toggle('active', id === v);
+  save();
+}
+function toggleFold(townId) {
+  const box = TOWN_EL.get(townId);
+  const folded = !box.classList.contains('folded');
+  box.classList.toggle('folded', folded);
+  state.folded[townId] = folded;
+  save();
+}
+const isWide = () => window.matchMedia('(min-width: 860px)').matches;
+
+// ---------- status strip ----------
+let statusTimer = 0;
+function showStatus(text, btnLabel, onBtn, ms) {
+  clearTimeout(statusTimer);
+  const s = $('status'), b = $('statusBtn');
+  $('statusText').textContent = text;
+  b.hidden = !btnLabel;
+  b.textContent = btnLabel || '';
+  b.onclick = onBtn || null;
+  s.hidden = false;
+  if (ms) statusTimer = setTimeout(hideStatus, ms);
+}
+function hideStatus() { clearTimeout(statusTimer); $('status').hidden = true; }
+
+// ---------- selection (tap fallback) ----------
+function select(id) {
+  if (selected) CARD.get(selected)?.classList.remove('selected');
+  selected = id;
+  if (id) {
+    CARD.get(id).classList.add('selected');
+    showStatus(`Now tap a town for ${nameOf(id)}`, 'Cancel', () => select(null));
+  } else hideStatus();
+}
+function dropSelectedOn(target) {
+  if (!selected) return false;
+  const id = selected;
+  select(null);
+  place(id, target === 'bank' ? null : target);
+  return true;
+}
+
+// ---------- drag and drop (pointer events; press-and-hold on touch) ----------
+const HOLD_MS = 180, MOVE_TOL = 6, EDGE = 56;
+let drag = null, ghost = null, scrollRAF = 0;
+
+function onPointerDown(e) {
+  const card = e.target.closest('.card');
+  if (!card || card.classList.contains('ghost')) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (drag) abandonDrag();   // a second finger, or a pointer whose release was never delivered
+  const touch = e.pointerType !== 'mouse';
+  drag = { id: card.dataset.id, card, pid: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY,
+           touch, started: false, timer: 0, overEl: null };
+  if (touch) drag.timer = setTimeout(() => { if (drag && !drag.started) startDrag(); }, HOLD_MS);
+}
+function startDrag() {
+  drag.started = true;
+  try { drag.card.setPointerCapture(drag.pid); } catch (e) { /* not supported */ }
+  const r = drag.card.getBoundingClientRect();
+  drag.dx = drag.x0 - r.left; drag.dy = drag.y0 - r.top;
+  ghost = drag.card.cloneNode(true);
+  ghost.classList.remove('selected', 'lifting');
+  ghost.classList.add('ghost');
+  ghost.hidden = false;
+  ghost.style.width = r.width + 'px';
+  document.body.append(ghost);
+  drag.card.classList.add('lifting');
+  document.body.classList.add('dragging');
+  if (selected) select(null);
+  if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+  moveGhost();
+  updateOver();
+  if (!scrollRAF) scrollRAF = requestAnimationFrame(autoScroll);
+}
+function moveGhost() {
+  ghost.style.transform = `translate(${drag.x - drag.dx}px, ${drag.y - drag.dy}px) scale(1.08) rotate(-3deg)`;
+}
+function updateOver() {
+  const hit = document.elementFromPoint(drag.x, drag.y);
+  const t = hit ? hit.closest('[data-target]') : null;
+  if (t !== drag.overEl) {
+    if (drag.overEl) drag.overEl.classList.remove('over');
+    if (t) t.classList.add('over');
+    drag.overEl = t;
+  }
+}
+function autoScroll() {
+  if (!drag || !drag.started) { scrollRAF = 0; return; }
+  for (const pane of document.querySelectorAll('.pane')) {
+    if (pane.offsetParent === null) continue;
+    const r = pane.getBoundingClientRect();
+    if (drag.x < r.left || drag.x > r.right || drag.y < r.top || drag.y > r.bottom) continue;
+    if (drag.y < r.top + EDGE) pane.scrollTop -= ((r.top + EDGE - drag.y) / EDGE) * 14;
+    else if (drag.y > r.bottom - EDGE) pane.scrollTop += ((drag.y - (r.bottom - EDGE)) / EDGE) * 14;
+  }
+  scrollRAF = requestAnimationFrame(autoScroll);
+}
+function onPointerMove(e) {
+  if (!drag || e.pointerId !== drag.pid) return;
+  drag.x = e.clientX; drag.y = e.clientY;
+  if (!drag.started) {
+    if (Math.hypot(drag.x - drag.x0, drag.y - drag.y0) > MOVE_TOL) {
+      if (drag.touch) { clearTimeout(drag.timer); drag = null; }   // the finger is scrolling, not dragging
+      else startDrag();
+    }
+    return;
+  }
+  if (e.cancelable) e.preventDefault();
+  moveGhost();
+  updateOver();
+}
+function onPointerUp(e) {
+  if (!drag || e.pointerId !== drag.pid) return;
+  if (!drag.started) {
+    clearTimeout(drag.timer);
+    const card = drag.card; drag = null;
+    onCardTap(card);
+    return;
+  }
+  finishDrag(true);
+}
+function onPointerCancel(e) {
+  if (!drag || e.pointerId !== drag.pid) return;
+  if (!drag.started) { clearTimeout(drag.timer); drag = null; return; }
+  finishDrag(false);
+}
+function finishDrag(commit) {
+  const d = drag; drag = null;
+  if (ghost) { ghost.remove(); ghost = null; }
+  d.card.classList.remove('lifting');
+  document.body.classList.remove('dragging');
+  if (d.overEl) d.overEl.classList.remove('over');
+  try { d.card.releasePointerCapture(d.pid); } catch (e) {}
+  if (commit && d.overEl) {
+    const target = d.overEl.dataset.target;
+    place(d.id, target === 'bank' ? null : target);
+  }
+}
+function abandonDrag() {
+  if (!drag) return;
+  if (drag.started) finishDrag(false);
+  else { clearTimeout(drag.timer); drag = null; }
+}
+function onCardTap(card) {
+  const id = card.dataset.id;
+  select(selected === id ? null : id);
+}
+
+// ---------- back up, restore, install, offline (phase 2) ----------
+const APP = 'PokoPal';
+let offlineInfo = null;      // the service worker's last WARM_DONE report
+let installPrompt = null;    // Chrome/Android's deferred install prompt, when offered
+let wantReload = false;      // set when the user taps Reload on an update, so controllerchange reloads once
+let textMode = 'copy';
+
+function placedCount() {
+  let n = 0;
+  for (const [id, t] of Object.entries(state.placements)) if (TOWN.has(t) && POKE.has(id)) n++;
+  return n;
+}
+function backupObject() {
+  const placements = {};
+  for (const [id, t] of Object.entries(state.placements)) if (typeof t === 'string' && t) placements[id] = t;
+  return { app: APP, schema: 1, exportedAt: new Date().toISOString(), placed: placedCount(), total: POKE.size, placements };
+}
+function backupText() { return JSON.stringify(backupObject(), null, 1); }
+function backupName() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  return `${APP} backup ${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}.${p(d.getMinutes())}.json`;
+}
+async function doBackup() {
+  const text = backupText(), name = backupName();
+  closeSheets();
+  try {
+    const file = new File([text], name, { type: 'application/json' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: name });
+      showStatus('Backup shared', null, null, 2200);
+      return;
+    }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  if (window.POKOPIA_DATA) { openText('copy'); return; }   // single file or Claude page: downloads are swallowed there, so hand over the text
+  try {
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.rel = 'noopener';
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 15000);
+    showStatus(`Saved ${name}`, null, null, 3000);
+  } catch (e) { openText('copy'); }
+}
+
+function parseBackup(text) {
+  let obj;
+  try { obj = JSON.parse(text); } catch (e) { throw new Error('That is not a PokoPal backup.'); }
+  const src = obj && typeof obj === 'object' ? obj.placements : null;
+  if (!src || typeof src !== 'object') throw new Error('No placements found in that backup.');
+  const placements = {};
+  let known = 0, extra = 0;
+  for (const [id, t] of Object.entries(src)) {
+    if (typeof t !== 'string' || !t) continue;
+    placements[id] = t;                         // kept even if unknown here: a newer roster or town may know it
+    if (POKE.has(id) && TOWN.has(t)) known++; else extra++;
+  }
+  return { placements, known, extra, exportedAt: obj.exportedAt || null };
+}
+function applyPlacements(map) {
+  const before = { ...state.placements };
+  state.placements = { ...map };
+  state.placedOnce = true;
+  for (const [id, card] of CARD) {
+    const t = TOWN.has(map[id]) ? map[id] : null;
+    const box = t ? TOWN_CARDS.get(t) : $('bankCards');
+    if (card.parentElement !== box) insertSorted(box, card);
+  }
+  save();
+  refresh();
+  return before;
+}
+function restoreFromText(text) {
+  let b;
+  try { b = parseBackup(text); } catch (e) { showStatus(e.message, null, null, 3200); return false; }
+  const when = b.exportedAt ? new Date(b.exportedAt) : null;
+  const whenText = when && !isNaN(when)
+    ? `, saved ${when.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}` : '';
+  if (!confirm(`Replace the board with this backup (${b.known} placed${whenText})?`)) return false;
+  const before = applyPlacements(b.placements);
+  closeSheets();
+  const extra = b.extra ? ` (+${b.extra} for Pokémon or towns this version does not have yet)` : '';
+  showStatus(`Restored ${b.known} placements${extra}`, 'Undo', () => { applyPlacements(before); hideStatus(); }, 8000);
+  return true;
+}
+function clearBoard() {
+  const n = placedCount();
+  if (!n) { showStatus('The board is already empty', null, null, 2000); return; }
+  if (!confirm(`Send all ${n} placed Pokémon back to Not placed?`)) return;
+  const before = applyPlacements({});
+  closeSheets();
+  showStatus(`Cleared ${n} placements`, 'Undo', () => { applyPlacements(before); hideStatus(); }, 8000);
+}
+
+function showDialog(d) { if (d.open) return; if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
+function openSheet() { updateInstallRow(); renderAbout(); showDialog($('sheet')); }
+function closeSheets() { for (const id of ['sheet', 'textDlg']) { const d = $(id); if (d.open) d.close(); } }
+function openText(mode) {
+  textMode = mode;
+  const ta = $('textArea');
+  $('textTitle').textContent = mode === 'copy' ? 'Backup text' : 'Paste a backup';
+  $('textHint').textContent = mode === 'copy' ? 'Copy this and keep it somewhere safe, or send it to someone.' : 'Paste the text of a PokoPal backup here.';
+  $('textGoLabel').textContent = mode === 'copy' ? 'Copy' : 'Load';
+  ta.readOnly = mode === 'copy';
+  ta.value = mode === 'copy' ? backupText() : '';
+  const s = $('sheet'); if (s.open) s.close();
+  showDialog($('textDlg'));
+  ta.focus();
+  if (mode === 'copy') ta.select();
+}
+async function textGo() {
+  const ta = $('textArea');
+  if (textMode === 'paste') { if (restoreFromText(ta.value)) closeSheets(); return; }
+  try { await navigator.clipboard.writeText(ta.value); }
+  catch (e) {
+    ta.focus(); ta.select();
+    try { document.execCommand('copy'); } catch (e2) { showStatus('Select the text and copy it', null, null, 2600); return; }
+  }
+  showStatus('Backup copied', null, null, 2200);
+  closeSheets();
+}
+
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function updateInstallRow() {
+  const row = $('installBtn'), how = $('installHow');
+  if (isStandalone() || window.POKOPIA_DATA) { row.hidden = true; return; }
+  row.hidden = false;
+  if (installPrompt) how.textContent = 'Puts PokoPal on the home screen, so it opens like an app and works with no signal.';
+  else if (isIOS()) how.textContent = 'In Safari: tap Share (the square with the arrow), then “Add to Home Screen”. It then opens like an app and works with no signal.';
+  else how.textContent = 'In the browser menu choose “Install app” or “Add to Home screen”.';
+}
+async function doInstall() {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  try { await installPrompt.userChoice; } catch (e) { /* dismissed */ }
+  installPrompt = null;
+  updateInstallRow();
+}
+function renderAbout() {
+  const parts = [`${APP} · ${POKE.size} Pokémon · ${TOWNS.length} towns · ${placedCount()} placed`];
+  if (offlineInfo) {
+    parts.push(offlineInfo.cached >= offlineInfo.total
+      ? `Works with no signal ✓ (${offlineInfo.total} pictures saved · build ${offlineInfo.version})`
+      : `Saving pictures for offline use: ${offlineInfo.cached} of ${offlineInfo.total}`);
+  } else if (window.POKOPIA_DATA) parts.push('Single-file edition: everything is inside this page.');
+  else if (navigator.serviceWorker && navigator.serviceWorker.controller) parts.push('Preparing the offline copy…');
+  $('about').textContent = parts.join('\n');
+}
+
+function registerSW() {
+  if (!('serviceWorker' in navigator) || window.POKOPIA_DATA) return;
+  if (!(location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname))) return;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (wantReload) { wantReload = false; location.reload(); } });
+  navigator.serviceWorker.addEventListener('message', e => {
+    const m = e.data || {};
+    if (m.type !== 'WARM_DONE') return;
+    offlineInfo = m;
+    renderAbout();
+    if (!state.offlineReadyShown && m.total && m.cached >= m.total) {
+      state.offlineReadyShown = true; save();
+      showStatus('PokoPal now works with no signal ✓', null, null, 3000);
+    }
+  });
+  const tracked = new WeakSet();
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    const warm = () => { if (reg.active) reg.active.postMessage({ type: 'WARM' }); };
+    const track = w => {
+      if (!w || tracked.has(w)) return;
+      tracked.add(w);
+      w.addEventListener('statechange', () => {
+        if (w.state === 'installed' && navigator.serviceWorker.controller) {
+          showStatus('PokoPal has an update', 'Reload', () => { wantReload = true; w.postMessage({ type: 'SKIP_WAITING' }); });
+        }
+        if (w.state === 'activated') warm();
+      });
+    };
+    track(reg.installing);
+    reg.addEventListener('updatefound', () => track(reg.installing));
+    warm();
+  }).catch(() => { /* no offline copy; the app still works online */ });
+}
+
+// ---------- wiring ----------
+function wire() {
+  document.addEventListener('pointerdown', onPointerDown);
+  document.addEventListener('pointermove', onPointerMove, { passive: false });
+  document.addEventListener('pointerup', onPointerUp);
+  document.addEventListener('pointercancel', onPointerCancel);
+  // Stops iOS from scrolling the page while a card is being dragged (must be non-passive).
+  document.addEventListener('touchmove', e => { if (drag && drag.started && e.cancelable) e.preventDefault(); }, { passive: false });
+  document.addEventListener('contextmenu', e => { if (e.target.closest('.card')) e.preventDefault(); });
+  document.addEventListener('dragstart', e => e.preventDefault());
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { abandonDrag(); select(null); } });
+  window.addEventListener('blur', abandonDrag);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) abandonDrag(); });
+
+  $('dock').addEventListener('click', e => {
+    const tile = e.target.closest('.tile'); if (!tile) return;
+    const target = tile.dataset.target;
+    if (dropSelectedOn(target)) return;
+    setView(target);
+  });
+  $('towns').addEventListener('click', e => {
+    if (e.target.closest('.card')) return;
+    const box = e.target.closest('.town'); if (!box) return;
+    const target = box.dataset.target;
+    if (dropSelectedOn(target)) return;
+    if (e.target.closest('.town-head') && isWide()) toggleFold(target);
+  });
+  $('bank').addEventListener('click', e => {
+    if (e.target.closest('.card')) return;
+    dropSelectedOn('bank');
+  });
+
+  const q = $('q');
+  q.addEventListener('input', () => {
+    filter.qRaw = q.value.trim();
+    filter.q = filter.qRaw.toLowerCase();
+    $('clearQ').hidden = !filter.q;
+    applyFilter();
+  });
+  q.addEventListener('keydown', e => { if (e.key === 'Enter') q.blur(); });
+  $('clearQ').addEventListener('click', () => { q.value = ''; q.dispatchEvent(new Event('input')); q.focus(); });
+
+  $('moreBtn').addEventListener('click', openSheet);
+  $('sheetClose').addEventListener('click', closeSheets);
+  $('textClose').addEventListener('click', closeSheets);
+  for (const id of ['sheet', 'textDlg']) $(id).addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  $('backupBtn').addEventListener('click', doBackup);
+  $('copyBtn').addEventListener('click', () => openText('copy'));
+  $('pasteBtn').addEventListener('click', () => openText('paste'));
+  $('restoreBtn').addEventListener('click', () => $('restoreFile').click());
+  $('restoreFile').addEventListener('change', async () => {
+    const input = $('restoreFile'), f = input.files && input.files[0];
+    input.value = '';
+    if (!f) return;
+    try { restoreFromText(await f.text()); } catch (e) { showStatus('Could not read that file', null, null, 2600); }
+  });
+  $('installBtn').addEventListener('click', doInstall);
+  $('clearBtn').addEventListener('click', clearBoard);
+  $('textGo').addEventListener('click', textGo);
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; updateInstallRow(); });
+  window.addEventListener('appinstalled', () => { installPrompt = null; updateInstallRow(); showStatus('PokoPal is on your home screen', null, null, 3000); });
+}
+
+// ---------- start ----------
+(async function start() {
+  load();
+  try {
+    const data = await loadData();
+    buildTowns(data.towns);
+    buildChips();
+    buildCards(data.pokemon);
+    wire();
+    setView(state.view);
+    refresh();
+    renderAbout();
+    registerSW();
+    window.PokoPal = { backup: backupText, restore: restoreFromText, placements: () => ({ ...state.placements }) };
+  } catch (err) {
+    document.body.insertAdjacentHTML('afterbegin',
+      `<div style="margin:12px;padding:12px;border-radius:12px;background:#FDE7E7;color:#7A1F1F;font-weight:600">The data files could not be loaded (${err && err.message ? err.message : err}). Open this page through a web server or the packaged single file.</div>`);
+  }
+})();
+})();
+</script>
+</body>
+</html>
