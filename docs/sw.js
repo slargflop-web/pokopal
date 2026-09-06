@@ -8,7 +8,7 @@
  *  - VERSION is stamped by tools/publish.sh on every release. Nothing else in here needs editing when the
  *    roster or the towns change: the sprite list is read from the data file, never written here.
  */
-const VERSION = '2026-09-06-1058';
+const VERSION = '2026-09-06-1130';
 const SHELL = `pokopal-shell-${VERSION}`;
 const ASSETS = 'pokopal-assets';   // sprites, icons, fonts; keyed by URL and kept across versions
 const SHELL_URLS = ['./index.html', './sync.js', './manifest.json', './data/towns.json', './data/pokemon.json', './data/habitats.json', './data/sync.json'];
