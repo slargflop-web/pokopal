@@ -1,6 +1,6 @@
 /* PokoPal service worker: instant opening, works with no signal, installs to the home screen.
  *
- *  - Shell (index.html, manifest) and data (data/*.json): served from the cache at once, refreshed from the
+ *  - Shell (index.html, sync.js, manifest) and data (data/*.json): served from the cache at once, refreshed from the
  *    network in the background. A change published to the site lands on the next open, and open pages
  *    are told "update ready" when a new worker (new VERSION) has installed.
  *  - Sprites, icons and fonts: cache-first. Every sprite named in data/pokemon.json is pulled into the
@@ -11,8 +11,8 @@
 const VERSION = '2026-09-06-1058';
 const SHELL = `pokopal-shell-${VERSION}`;
 const ASSETS = 'pokopal-assets';   // sprites, icons, fonts; keyed by URL and kept across versions
-const SHELL_URLS = ['./index.html', './manifest.json', './data/towns.json', './data/pokemon.json', './data/habitats.json'];
-const OPTIONAL = new Set(['./data/habitats.json']);
+const SHELL_URLS = ['./index.html', './sync.js', './manifest.json', './data/towns.json', './data/pokemon.json', './data/habitats.json', './data/sync.json'];
+const OPTIONAL = new Set(['./data/habitats.json', './data/sync.json']);
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
       event.respondWith(staleWhileRevalidate(event, './index.html', SHELL));
     } else if (path.endsWith('.json') && path.includes('/data/')) {
       event.respondWith(staleWhileRevalidate(event, req, SHELL));
-    } else if (path.endsWith('/manifest.json')) {
+    } else if (path.endsWith('/manifest.json') || path.endsWith('/sync.js')) {
       event.respondWith(staleWhileRevalidate(event, req, SHELL));
     } else if (path.includes('/sprites/') || path.includes('/icons/')) {
       event.respondWith(cacheFirst(event, req, ASSETS));

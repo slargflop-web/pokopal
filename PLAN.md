@@ -68,7 +68,7 @@ Named **PokoPal** on September 6, 2026; the working name was Pokopia Homes. The 
 
 **The interaction, exactly as Andrea described it.** Press a card, drag it, drop it in a town. It stays there. Drag it to another town to move it (which is also what you do in the game when you rehouse a Pokémon). Drag it back to the bank to unassign. Cards stay draggable forever, unlike Procreate. For very small screens there is a tap fallback: tap a card, tap a town.
 
-**Saves itself.** Every drop is saved on the phone instantly. A Backup button exports the whole board as a small file, and Restore loads it. Nothing needs an account.
+**Saves itself.** Every drop is saved on the phone instantly. A Backup button exports the whole board as a small file, and Restore loads it. Nothing needs an account. *Since phase 3 (September 6, 2026) the two phones can share one board through a room code; still no account.*
 
 **Built to scale.** The roster and the town list are two data files. Adding the 2027 town, or the Part 2 Pokémon, is a data edit with no code change. Each card can carry extra facts later without changing the board.
 
@@ -88,6 +88,8 @@ Named **PokoPal** on September 6, 2026; the working name was Pokopia Homes. The 
 
 **Hosting on GitHub Pages, free.** One-time setup: sign into GitHub on this Mac. Until then, the prototype can be previewed here in the app's browser and sent as a file, or published as a private Claude page.
 
+**The shared board rides on public Nostr relays, sealed, with no accounts** (phase 3, September 6, 2026). Every free backend that could hold a board for two phones wanted someone to create an account first (Firebase, Supabase, Cloudflare), and the no-sign-up JSON stores are one hobbyist's server each, with expiry rules and guessable addresses. Nostr relays are free message boards run by many separate operators: no sign-up, one latest copy kept per author, changes pushed live over a socket. The app derives a signing key and an encryption key from a room code, so both phones post as one author and only they can read the copy; the relays see ciphertext. The relay list is data (`docs/data/sync.json`, five of the twelve that passed `tools/probe_relays.mjs`). The merge rule is last change wins per Pokémon, every move stamped, so two phones that edited offline combine instead of clobbering. If every relay vanished both phones would still have the board, and any dumb store could replace the relays behind the same `docs/sync.js` interface.
+
 **Testing.** The desktop browser pane here at iPhone size for layout, then Andrea's actual iPhone for the drag feel. The drag feel is the whole product; it gets tested on real glass before we call anything done.
 
 ## The phases
@@ -97,7 +99,7 @@ Named **PokoPal** on September 6, 2026; the working name was Pokopia Homes. The 
 | 0. Data — **built September 6, 2026** | `docs/data/pokemon.json` (357 entries plus 10 flagged alternate forms: dex, name, types, category, sprite, habitats) and `docs/data/towns.json` (six towns) built from the datasets above by `tools/build_data.py`; counts cross-checked against three sources; 364 sprites vendored into `docs/sprites/` | Half a session |
 | 1. Board — **built September 6, 2026** | The one-screen app `docs/index.html`: bank, six towns, press-and-hold drag-and-drop with a tap fallback, type colors, counter, auto-save, undo, search and type chips. Packaged as `dist/PokoPal.html` and published as a private Claude page for phones until it is hosted: https://claude.ai/code/artifact/614ee03d-cdec-4d62-85f1-3259d0e5b8b9 | One session |
 | 2. Install — **built September 6, 2026** | `docs/sw.js` service worker: the page, data and all 364 sprites cached for offline use, with an "update ready, Reload" strip on new releases; the ⋯ menu with Back up (share or save a JSON file, or copy as text), Restore (file or pasted text, Undo offered), Add to Home Screen steps and Clear the board; `tools/publish.sh` for GitHub Pages (creates the repo and switches Pages on after a one-time `gh auth login`). Search and type filters shipped in Phase 1. *The app icon, the manifest and the home-screen name came with the PokoPal rename, September 6, 2026.* | One session |
-| 3. Share | Optional: a shared board so Taylor's phone and Andrea's phone show the same placements. Simplest version: Backup file sent by text. Fuller version: a tiny free backend. Decide after using it for a week | Half a session |
+| 3. Share — **built September 6, 2026** | A shared board: both phones show the same placements, live while either is open, and they combine after either was offline. No accounts. Taylor taps ⋯ → **Share with another phone** and texts the code (or the link); Andrea taps ⋯ → **Have a code? Join a shared board** and pastes it. The board travels sealed through five public Nostr relays (free message boards that need no sign-up, listed in `docs/data/sync.json`); each phone keeps the whole board, so the relays are a mailbox, not the home. Engine `docs/sync.js`, proved by `tools/test_sync.mjs` (merge rule, BIP-340 vectors, two phones through the live relays). Decided the hour the glass test came back good, not after a week. | One session |
 | 4. Grow | Add the next pain point from the list above, one at a time, as Andrea asks | Ongoing |
 
 ## Things to know
@@ -106,10 +108,11 @@ Named **PokoPal** on September 6, 2026; the working name was Pokopia Homes. The 
 - **Andrea's phone.** The plan assumes iPhone. Android works the same way with Chrome.
 - **Roster drift.** Part 2 lands late 2026 with new Pokémon; refresh `pokemon.json` from the same dataset when it does. Placements are keyed by Pokémon id, so a refresh never loses her board.
 - **Backups.** iPhone can clear a website's storage if it goes unused for a long time; a home-screen install is exempt, and the Backup file covers the rest.
+- **The room code is the key.** Anyone holding it can see and change the shared board, and it lives in one text between the two of you. Stop sharing and Share again to get a fresh one. A phone that stops sharing keeps its copy of the board.
 
 ## Kick it off
 
-~~Phase 0 and Phase 1 can start on one sentence: **"Build Pokopia Homes, phases 0 and 1."** The result will be a file Andrea can open on her phone the same day.~~ *Done September 6, 2026. `README.md` says where everything is and how to run it.* ~~Phase 2 starts on: **"Build PokoPal, phase 2."**~~ *Done September 6, 2026.* What is left is by hand: `gh auth login` on this Mac, then `tools/publish.sh`, then open the address on Andrea's iPhone, Share, Add to Home Screen, and drag a few Pokémon on real glass. Phase 3 starts, after a week of use, on: **"Build PokoPal, phase 3."**
+~~Phase 0 and Phase 1 can start on one sentence: **"Build Pokopia Homes, phases 0 and 1."** The result will be a file Andrea can open on her phone the same day.~~ *Done September 6, 2026. `README.md` says where everything is and how to run it.* ~~Phase 2 starts on: **"Build PokoPal, phase 2."**~~ *Done September 6, 2026, and live the same morning at https://slargflop-web.github.io/pokopal/ (GitHub account `slargflop-web`, repo `pokopal`).* What is left is by hand: open that address on Andrea's iPhone, Share, Add to Home Screen, and drag a few Pokémon on real glass. ~~Phase 3 starts, after a week of use, on: **"Build PokoPal, phase 3."**~~ *Done September 6, 2026, on "launch phase 3" the hour the glass test came back good, and live at the same address. What is left is by hand: on Taylor's phone, ⋯ → Share with another phone → Send the code; on Andrea's, ⋯ → Have a code? Join a shared board → paste it. Phase 4 starts on the next pain point Andrea names.*
 
 ## Sources
 

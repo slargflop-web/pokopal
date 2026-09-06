@@ -367,7 +367,7 @@
       </div>
       <div class="block">
         <h3>Saves itself, scales itself</h3>
-        <p>Every drop is saved on the phone instantly. Backup exports the board as a small file; Restore loads it. No account. The roster and the town list are two data files, so the 2027 town or the Part 2 Pokémon are data edits with no code change.</p>
+        <p>Every drop is saved on the phone instantly. Backup exports the board as a small file; Restore loads it. No account. Since phase 3 the two phones can share one board through a room code, still with no account. The roster and the town list are two data files, so the 2027 town or the Part 2 Pokémon are data edits with no code change.</p>
       </div>
     </div>
     <h3>Other pain points the same board can absorb later</h3>
@@ -397,6 +397,10 @@
         <p>One-time setup: sign into GitHub on this Mac. Until then the prototype previews here in the app's browser, travels as a file, or publishes as a private Claude page.</p>
       </div>
       <div class="block">
+        <h3>The shared board rides on public relays, sealed, no accounts</h3>
+        <p>Every free backend that could hold a board for two phones wanted an account first, and the no-sign-up JSON stores are one hobbyist's server each. Public Nostr relays are free message boards run by many separate operators: no sign-up, one latest copy kept per author, changes pushed live. Both phones derive the same signing and encryption keys from the room code, so they post as one author and only they can read the copy. Newest move per Pokémon wins, so two phones that edited offline combine. The relay list is data; if every relay vanished, both phones would still have the board.</p>
+      </div>
+      <div class="block">
         <h3>Testing on real glass</h3>
         <p>The browser pane here at iPhone size for layout, then Andrea's actual iPhone for the drag feel. The drag feel is the whole product; nothing is called done until it has been dragged on a phone.</p>
       </div>
@@ -412,7 +416,7 @@
           <tr><td class="name">0 · Data</td><td><strong>Built September 6, 2026.</strong> pokemon.json (357 entries plus 10 flagged alternate forms: dex, name, types, category, sprite, habitats) and towns.json (six towns), built from the datasets above; counts already cross-checked against three sources</td><td>Half a session</td></tr>
           <tr><td class="name">1 · Board</td><td><strong>Built September 6, 2026.</strong> The one-screen app: bank, six towns, drag-and-drop, type colors, counter, auto-save</td><td>One session</td></tr>
           <tr><td class="name">2 · Install</td><td><strong>Built September 6, 2026.</strong> A service worker caches the page, the data and all 364 sprites, so the app works with no signal and shows "update ready, Reload" on new releases; a ⋯ menu with Back up (share or save a small file, or copy as text), Restore (file or pasted text, Undo offered), Add to Home Screen steps and Clear the board; a publish script for GitHub Pages. The icon, the manifest and the home-screen name came with the PokoPal rename the same day</td><td>One session</td></tr>
-          <tr><td class="name">3 · Share</td><td>Optional: Taylor's phone and Andrea's phone showing the same board. Simplest: a Backup file sent by text. Fuller: a tiny free backend. Decide after a week of use</td><td>Half a session</td></tr>
+          <tr><td class="name">3 · Share</td><td><strong>Built September 6, 2026.</strong> A shared board: both phones show the same placements, live while either is open, and they combine after either was offline. No accounts. Taylor taps ⋯ → Share with another phone and texts the code (or the link); Andrea taps ⋯ → Have a code? Join a shared board and pastes it. The board travels sealed through five public Nostr relays (free message boards with no sign-up, listed in a data file); each phone keeps the whole board, so the relays are a mailbox, not the home. Decided the hour the glass test came back good, not after a week</td><td>One session</td></tr>
           <tr><td class="name">4 · Grow</td><td>The next pain point from the list, one at a time, as Andrea asks</td><td>Ongoing</td></tr>
         </tbody>
       </table>
@@ -426,13 +430,14 @@
       <li><strong>Andrea's phone.</strong> The plan assumes iPhone. Android works the same way with Chrome.</li>
       <li><strong>Roster drift.</strong> Part 2 lands late 2026 with new Pokémon; refresh the data file when it does. Placements are keyed by Pokémon id, so a refresh never loses her board.</li>
       <li><strong>Backups.</strong> iPhone can clear a website's storage after long disuse; a home-screen install is exempt, and the Backup file covers the rest.</li>
+      <li><strong>The room code is the key.</strong> Anyone holding it can see and change the shared board, and it lives in one text between the two of you. Stop sharing and Share again for a fresh one; a phone that stops sharing keeps its copy.</li>
     </ul>
   </section>
 
   <section class="kick">
     <div class="eyebrow">Kick it off</div>
-    <div class="say">"Build PokoPal, phase 3."</div>
-    <p>Phases 0, 1 and 2 were built on September 6, 2026. Left by hand: sign this Mac into GitHub once (<span class="mono">gh auth login</span>), run <span class="mono">tools/publish.sh</span>, then open the address on Andrea's iPhone, Share, Add to Home Screen, and drag a few Pokémon on real glass. After a week of use, that sentence starts the shared-board phase.</p>
+    <div class="say">"Build PokoPal, phase 4."</div>
+    <p>Phases 0 to 3 were built on September 6, 2026, and are live at <a href="https://slargflop-web.github.io/pokopal/">slargflop-web.github.io/pokopal</a>; the glass test passed the same morning. Left by hand, once: on Taylor's phone, ⋯ → Share with another phone → Send the code; on Andrea's, ⋯ → Have a code? Join a shared board → paste it. Phase 4 starts with that sentence and the next pain point Andrea names.</p>
   </section>
 
   <hr>

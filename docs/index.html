@@ -366,6 +366,50 @@
     .sheet { inset: 0; margin: auto; width: 440px; max-height: 80vh; border-radius: 20px; }
   }
 
+  /* ---------- shared board (phase 3) ---------- */
+  .sync {
+    flex: none; align-self: center; margin-left: 2px;
+    width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%;
+    background: none; cursor: pointer; position: relative;
+  }
+  .sync::before {
+    content: ''; position: absolute; left: 7px; top: 7px; width: 10px; height: 10px; border-radius: 50%;
+    background: #8A968D;
+  }
+  .sync[data-state="synced"]::before { background: #2E9E5B; }
+  .sync[data-state="pending"]::before, .sync[data-state="starting"]::before { background: #E0A100; animation: pulse 1.2s ease-in-out infinite; }
+  .sync[data-state="offline"]::before, .sync[data-state="error"]::before { background: #B3261E; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .share {
+    display: flex; flex-direction: column; gap: 5px;
+    padding: 11px 12px; border-radius: 12px;
+    background: var(--accent-soft); border: 1px solid var(--line);
+  }
+  .share-head { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }
+  .share-head .state { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--ink-2); }
+  .share-head .state::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #8A968D; }
+  .share[data-state="synced"] .state::before { background: #2E9E5B; }
+  .share[data-state="pending"] .state::before, .share[data-state="starting"] .state::before { background: #E0A100; }
+  .share[data-state="offline"] .state::before, .share[data-state="error"] .state::before { background: #B3261E; }
+  .share-sub { font-size: 12px; color: var(--ink-2); line-height: 1.35; }
+  .share .subrow { margin-top: 2px; }
+  .stack { display: flex; flex-direction: column; gap: 8px; }
+  .code {
+    display: block; width: 100%; padding: 12px 10px; border-radius: 12px; border: 1px dashed var(--accent);
+    background: var(--ground); color: var(--ink); text-align: center;
+    font: 700 18px/1.3 ui-monospace, Menlo, monospace; letter-spacing: 0.04em; word-break: break-all;
+    user-select: all; -webkit-user-select: all;
+  }
+  #codeInput {
+    width: 100%; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--ground); color: var(--ink); font: 600 16px ui-monospace, Menlo, monospace; text-transform: uppercase;
+    outline: none; -webkit-appearance: none; appearance: none;
+  }
+  #codeInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .steps { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+  .steps li + li { margin-top: 3px; }
+  .act:disabled { opacity: 0.55; cursor: default; }
+
   /* ---------- wide layout ---------- */
   @media (min-width: 860px) {
     .top { padding: 12px 14px 8px; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
@@ -410,7 +454,8 @@
   <div class="row1">
     <h1><img class="mark" src="icons/pokopal-mark.png" alt="" width="26" height="26">PokoPal</h1>
     <div class="counter" id="counter"><b>0</b> of 0 placed</div>
-    <button class="more" id="moreBtn" type="button" aria-label="Menu" title="Back up, restore, add to home screen">⋯</button>
+    <button class="sync" id="syncDot" type="button" hidden aria-label="Shared board" title="Shared board"></button>
+    <button class="more" id="moreBtn" type="button" aria-label="Menu" title="Share, back up, restore, add to home screen">⋯</button>
   </div>
   <div class="row2">
     <input id="q" type="search" placeholder="Search Pokémon, type or number" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
@@ -435,6 +480,13 @@
 <dialog class="sheet" id="sheet" aria-label="PokoPal menu">
   <div class="sheet-head"><img class="mark" src="icons/pokopal-mark.png" alt="" width="22" height="22"><span>PokoPal</span><button class="x" id="sheetClose" type="button" aria-label="Close">×</button></div>
   <div class="sheet-body">
+    <div class="share" id="shareBox" hidden>
+      <div class="share-head"><span>Shared board</span><span class="state" id="shareState">…</span></div>
+      <div class="share-sub" id="shareSub"></div>
+      <div class="subrow"><button class="sub" id="showCodeBtn" type="button">Show the code</button><button class="sub" id="stopShareBtn" type="button">Stop sharing</button></div>
+    </div>
+    <button class="act" id="shareBtn" type="button"><b>Share with another phone</b><span id="shareHow">Both phones show the same board. You get a code to text; the other phone enters it.</span></button>
+    <div class="subrow" id="joinRow"><button class="sub" id="joinBtn" type="button">Have a code? Join a shared board</button></div>
     <button class="act" id="backupBtn" type="button"><b>Back up</b><span>Saves the board as a small file to keep in Files, AirDrop or text to someone.</span></button>
     <button class="act" id="restoreBtn" type="button"><b>Restore</b><span>Loads a backup file in place of the board. Undo is offered.</span></button>
     <div class="subrow"><button class="sub" id="copyBtn" type="button">Copy backup as text</button><button class="sub" id="pasteBtn" type="button">Paste backup text</button></div>
@@ -454,7 +506,31 @@
   </div>
 </dialog>
 
+<dialog class="sheet" id="shareDlg" aria-label="Shared board">
+  <div class="sheet-head"><span id="shareTitle">Share with another phone</span><button class="x" id="shareClose" type="button" aria-label="Close">×</button></div>
+  <div class="sheet-body">
+    <div class="stack" id="showPane">
+      <p class="hint">Send this code to the other phone. Anyone with it can see and change the board, so keep it between you.</p>
+      <div class="code" id="codeText"></div>
+      <button class="act primary" id="sendCodeBtn" type="button"><b>Send the code</b></button>
+      <div class="subrow"><button class="sub" id="copyCodeBtn" type="button">Copy the code</button><button class="sub" id="copyLinkBtn" type="button">Copy a link</button></div>
+      <ol class="steps">
+        <li>On the other phone, open PokoPal.</li>
+        <li>Tap ⋯, then “Have a code? Join a shared board”.</li>
+        <li>Paste the code and tap Join. The two boards combine, and from then on every move shows on both phones.</li>
+      </ol>
+    </div>
+    <div class="stack" id="joinPane">
+      <p class="hint">Paste the code from the other phone.</p>
+      <input id="codeInput" type="text" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+      <button class="act primary" id="joinGoBtn" type="button"><b>Join</b></button>
+      <p class="hint" id="joinNote" hidden></p>
+    </div>
+  </div>
+</dialog>
+
 <!--#data-->
+<script src="sync.js"></script>
 <script>
 (() => {
 'use strict';
@@ -492,7 +568,7 @@ const CARD = new Map();         // id -> card element
 const TOWN_CARDS = new Map();   // townId -> cards container
 const TOWN_EL = new Map();      // townId -> .town element
 const TILE = new Map();         // 'bank' | townId -> tile element
-let state = { placements: {}, folded: {}, view: 'bank', placedOnce: false };
+let state = { placements: {}, stamps: {}, folded: {}, view: 'bank', placedOnce: false };   // stamps: id -> ms of its last move (phase 3)
 let filter = { q: '', type: '' };
 let selected = null;
 let lastMove = null;
@@ -511,22 +587,31 @@ function load() {
       state.view = typeof s.view === 'string' ? s.view : 'bank';
       state.placedOnce = !!s.placedOnce;
       state.offlineReadyShown = !!s.offlineReadyShown;
+      state.stamps = (s.stamps && typeof s.stamps === 'object') ? s.stamps : {};
+      // A board saved before phase 3 carries no stamps: date every placement from the save, so a first sync combines
+      // the two phones' boards instead of one clobbering the other.
+      if (!Object.keys(state.stamps).length && Object.keys(state.placements).length) {
+        const at = Date.parse(s.updatedAt) || Date.now();
+        for (const id of Object.keys(state.placements)) state.stamps[id] = at;
+      }
     }
   } catch (e) { /* storage unavailable or corrupt: start empty */ }
 }
 function save() {
   try { state.updatedAt = new Date().toISOString(); localStorage.setItem(KEY, JSON.stringify(state)); }
   catch (e) { /* private mode or quota: the board still works for this session */ }
+  if (sync) sync.schedule();   // shared board: send this change (a moment later, so a run of moves goes as one)
 }
 
 // ---------- data ----------
 async function loadData() {
   if (window.POKOPIA_DATA) return window.POKOPIA_DATA;
-  const [t, p] = await Promise.all([
+  const [t, p, s] = await Promise.all([
     fetch('data/towns.json').then(r => r.json()),
     fetch('data/pokemon.json').then(r => r.json()),
+    fetch('data/sync.json').then(r => (r.ok ? r.json() : null)).catch(() => null),   // optional: without it, sharing is off
   ]);
-  return { towns: t.towns, pokemon: p.pokemon };
+  return { towns: t.towns, pokemon: p.pokemon, sync: s };
 }
 
 // ---------- building the board ----------
@@ -632,6 +717,7 @@ function place(id, townId, opts = {}) {
   const to = townId && TOWN.has(townId) ? townId : null;
   if (from === to) return false;
   if (to) state.placements[id] = to; else delete state.placements[id];
+  state.stamps[id] = Date.now();
   state.placedOnce = true;
   insertSorted(to ? TOWN_CARDS.get(to) : $('bankCards'), CARD.get(id));
   save();
@@ -910,7 +996,12 @@ function parseBackup(text) {
 }
 function applyPlacements(map) {
   const before = { ...state.placements };
-  state.placements = { ...map };
+  const now = Date.now();
+  state.placements = {};
+  for (const [id, t] of Object.entries(map)) if (typeof t === 'string' && t) state.placements[id] = t;
+  for (const id of new Set([...Object.keys(before), ...Object.keys(state.placements)])) {
+    if ((before[id] || '') !== (state.placements[id] || '')) state.stamps[id] = now;   // every Pokémon this changed moved now
+  }
   state.placedOnce = true;
   for (const [id, card] of CARD) {
     const t = TOWN.has(map[id]) ? map[id] : null;
@@ -927,7 +1018,7 @@ function restoreFromText(text) {
   const when = b.exportedAt ? new Date(b.exportedAt) : null;
   const whenText = when && !isNaN(when)
     ? `, saved ${when.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}` : '';
-  if (!confirm(`Replace the board with this backup (${b.known} placed${whenText})?`)) return false;
+  if (!confirm(`Replace the board with this backup (${b.known} placed${whenText})?${share ? ' It replaces the shared board on both phones.' : ''}`)) return false;
   const before = applyPlacements(b.placements);
   closeSheets();
   const extra = b.extra ? ` (+${b.extra} for Pokémon or towns this version does not have yet)` : '';
@@ -937,15 +1028,15 @@ function restoreFromText(text) {
 function clearBoard() {
   const n = placedCount();
   if (!n) { showStatus('The board is already empty', null, null, 2000); return; }
-  if (!confirm(`Send all ${n} placed Pokémon back to Not placed?`)) return;
+  if (!confirm(`Send all ${n} placed Pokémon back to Not placed?${share ? ' This clears the shared board on both phones.' : ''}`)) return;
   const before = applyPlacements({});
   closeSheets();
   showStatus(`Cleared ${n} placements`, 'Undo', () => { applyPlacements(before); hideStatus(); }, 8000);
 }
 
 function showDialog(d) { if (d.open) return; if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
-function openSheet() { updateInstallRow(); renderAbout(); showDialog($('sheet')); }
-function closeSheets() { for (const id of ['sheet', 'textDlg']) { const d = $(id); if (d.open) d.close(); } }
+function openSheet() { updateInstallRow(); renderSync(); renderAbout(); showDialog($('sheet')); }
+function closeSheets() { for (const id of ['sheet', 'textDlg', 'shareDlg']) { const d = $(id); if (d.open) d.close(); } }
 function openText(mode) {
   textMode = mode;
   const ta = $('textArea');
@@ -996,6 +1087,7 @@ function renderAbout() {
       : `Saving pictures for offline use: ${offlineInfo.cached} of ${offlineInfo.total}`);
   } else if (window.POKOPIA_DATA) parts.push('Single-file edition: everything is inside this page.');
   else if (navigator.serviceWorker && navigator.serviceWorker.controller) parts.push('Preparing the offline copy…');
+  if (share) parts.push(syncStatus ? `Shared board · ${syncStatus.open} of ${syncStatus.relays} relays · ${syncLabel(syncStatus)}` : 'Shared board · starting');
   $('about').textContent = parts.join('\n');
 }
 
@@ -1030,6 +1122,186 @@ function registerSW() {
     reg.addEventListener('updatefound', () => track(reg.installing));
     warm();
   }).catch(() => { /* no offline copy; the app still works online */ });
+}
+
+// ---------- shared board (phase 3): one board on two phones ----------
+// The engine is docs/sync.js (window.PokoSync). This side owns the board: it stamps every move, hands the engine the
+// board as { id: [townId or '', stampMs] }, and applies what comes back with the engine's last-change-wins merge.
+const SHARE_KEY = 'pokopal:share';   // { code, deviceId, since, role }: the room this phone is on; not part of the board or its backups
+let share = null, sync = null, syncStatus = null, syncConf = null, joinedJustNow = false;
+
+function loadShare() {
+  try { const s = JSON.parse(localStorage.getItem(SHARE_KEY) || 'null'); if (s && typeof s.code === 'string') share = s; } catch (e) { share = null; }
+}
+function saveShare() {
+  try { if (share) localStorage.setItem(SHARE_KEY, JSON.stringify(share)); else localStorage.removeItem(SHARE_KEY); } catch (e) {}
+}
+function newDeviceId() { try { return crypto.randomUUID(); } catch (e) { return Math.random().toString(36).slice(2) + Date.now().toString(36); } }
+const canShare = () => !!(window.PokoSync && syncConf && Array.isArray(syncConf.relays) && syncConf.relays.length);
+
+function syncEntries() {
+  const out = {};
+  for (const [id, at] of Object.entries(state.stamps)) {
+    const t = state.placements[id];
+    out[id] = [typeof t === 'string' ? t : '', +at || 0];
+  }
+  return out;
+}
+// Takes the other phone's board in; returns how many Pokémon moved here because of it.
+function applyRemoteEntries(entries) {
+  const mine = syncEntries();
+  const { merged, changed } = PokoSync.mergeEntries(mine, entries);
+  if (PokoSync.sameEntries(merged, mine)) return 0;
+  const placements = {}, stamps = {};
+  for (const [id, [t, at]] of Object.entries(merged)) { stamps[id] = at; if (t) placements[id] = t; }
+  for (const [id, t] of Object.entries(state.placements)) if (!(id in stamps) && t) placements[id] = t;   // never drop a placement
+  state.placements = placements;
+  state.stamps = stamps;
+  for (const { id } of changed) {
+    const card = CARD.get(id);
+    if (!card) continue;
+    const t = TOWN.has(state.placements[id]) ? state.placements[id] : null;
+    const box = t ? TOWN_CARDS.get(t) : $('bankCards');
+    if (card.parentElement !== box) insertSorted(box, card);
+  }
+  if (placedCount() > 0) state.placedOnce = true;
+  save();
+  refresh();
+  return changed.length;
+}
+
+function startSync(justJoined) {
+  if (sync) { sync.stop(); sync = null; }
+  syncStatus = null;
+  if (!share || !canShare()) { renderSync(); return; }
+  joinedJustNow = !!justJoined;
+  sync = PokoSync.connect({
+    code: share.code, relays: syncConf.relays, kind: syncConf.kind, tag: syncConf.tag, deviceId: share.deviceId,
+    getEntries: syncEntries,
+    applyRemote: entries => applyRemoteEntries(entries),
+    onRemote: ({ changes }) => {
+      if (joinedJustNow) { joinedJustNow = false; showStatus(`Shared board loaded · ${placedCount()} placed`, null, null, 3000); }
+      else showStatus(`Updated from the other phone (${changes} moved)`, null, null, 3000);
+    },
+    onStatus: st => { syncStatus = st; renderSync(); },
+  });
+  sync.schedule(800);
+  renderSync();
+}
+function stopSync() { if (sync) { sync.stop(); sync = null; } syncStatus = null; renderSync(); }
+
+function ago(t) {
+  const s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if (s < 8) return 'just now';
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.round(s / 60)} min ago`;
+  return new Date(t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+function syncLabel(st) {
+  if (!share) return '';
+  if (!st) return 'Starting…';
+  switch (st.state) {
+    case 'synced': { const t = Math.max(st.lastSyncAt || 0, st.lastRemoteAt || 0); return t ? `Synced ${ago(t)}` : 'Synced'; }
+    case 'pending': return 'Sending…';
+    case 'offline': return 'Waiting for signal';
+    case 'error': return 'Could not start';
+    default: return 'Connecting…';
+  }
+}
+function renderSync() {
+  const dot = $('syncDot'), box = $('shareBox'), st = syncStatus;
+  const s = share ? (st ? st.state : 'starting') : 'off';
+  dot.hidden = !share;
+  dot.dataset.state = s;
+  dot.title = share ? `Shared board · ${syncLabel(st)}` : '';
+  box.hidden = !share;
+  $('shareBtn').hidden = !!share;
+  $('joinRow').hidden = !!share;
+  if (!canShare()) {
+    $('shareBtn').disabled = true;
+    $('shareHow').textContent = window.PokoSync ? 'Sharing is not available in this copy of PokoPal.' : 'Sharing could not load. Reload PokoPal with a signal and try again.';
+    $('joinRow').hidden = true;
+  }
+  if (share) {
+    box.dataset.state = s;
+    $('shareState').textContent = syncLabel(st);
+    $('shareSub').textContent = st && st.state === 'offline' ? 'Moves made now are kept and sent when the phone has signal again.'
+      : st && st.state === 'error' ? (st.error || 'Sharing could not start.')
+      : 'Every move shows on both phones. Changes from the other phone arrive while PokoPal is open.';
+  }
+}
+
+function startSharing() {
+  if (!canShare()) return;
+  share = { code: PokoSync.newCode(), deviceId: newDeviceId(), since: new Date().toISOString(), role: 'host' };
+  saveShare();
+  startSync(false);
+  openShareDlg('show');
+  showStatus('Sharing is on. Send the code to the other phone.', null, null, 3200);
+}
+function joinSharing(text) {
+  const code = PokoSync.normalizeCode(text);
+  if (!code) { showStatus('That is not a PokoPal code. It looks like XXXX-XXXX-XXXX-XXXX-XXXX-XXXX.', null, null, 3600); return false; }
+  if (share && share.code === code) { showStatus('This phone is already on that board', null, null, 2600); closeSheets(); return true; }
+  if (share && !confirm('Leave the current shared board and join this one?')) return false;
+  const n = placedCount();
+  share = { code, deviceId: newDeviceId(), since: new Date().toISOString(), role: 'guest' };
+  saveShare();
+  startSync(true);
+  closeSheets();
+  showStatus(n ? `Joined. Your ${n} placed will combine with the shared board.` : 'Joined the shared board', null, null, 3200);
+  return true;
+}
+function stopSharing() {
+  if (!share) return;
+  if (!confirm('Stop sharing? The board stays on this phone, but moves will no longer show on the other phone.')) return;
+  share = null; saveShare();
+  stopSync();
+  closeSheets();
+  showStatus('Sharing is off', null, null, 2200);
+}
+function openShareDlg(mode, prefill) {
+  $('showPane').hidden = mode !== 'show';
+  $('joinPane').hidden = mode !== 'join';
+  $('shareTitle').textContent = mode === 'show' ? 'Share with another phone' : 'Join a shared board';
+  if (mode === 'show') { $('codeText').textContent = share ? share.code : ''; $('copyLinkBtn').hidden = !shareLink(); }
+  else {
+    $('codeInput').value = prefill || '';
+    const note = $('joinNote');
+    note.hidden = !(prefill && isIOS() && !isStandalone() && !window.POKOPIA_DATA);
+    note.textContent = 'If PokoPal is on your home screen, open it there, tap ⋯ → “Have a code? Join a shared board” and paste this code, so the shared board lands in the copy you use.';
+  }
+  const sh = $('sheet'); if (sh.open) sh.close();
+  showDialog($('shareDlg'));
+  if (mode === 'join' && !prefill) $('codeInput').focus();
+}
+function shareLink() { return (window.POKOPIA_DATA || !share) ? '' : `${location.origin}${location.pathname}#join=${share.code}`; }
+function shareMessage() {
+  const link = shareLink();
+  return `Join my PokoPal board 💜\nCode: ${share.code}\nOpen PokoPal → ⋯ → “Have a code? Join a shared board” → paste the code.${link ? `\nOr tap: ${link}` : ''}`;
+}
+async function sendCode() {
+  if (!share) return;
+  const text = shareMessage();
+  try { if (navigator.share) { await navigator.share({ text }); showStatus('Code sent', null, null, 2000); return; } }
+  catch (e) { if (e && e.name === 'AbortError') return; }
+  copyText(text, 'Message copied. Paste it into a text to the other phone.');
+}
+async function copyText(text, done) {
+  if (!text) return false;
+  try { await navigator.clipboard.writeText(text); showStatus(done, null, null, 2600); return true; }
+  catch (e) { showStatus('Could not copy. Press and hold the code to select it.', null, null, 3000); return false; }
+}
+// A "#join=CODE" link (the one Send the code puts in the text) opens the join sheet with the code filled in.
+function handleJoinLink() {
+  const m = location.hash.match(/join=([^&]+)/i);
+  if (!m) return;
+  let code = null;
+  try { code = PokoSync.normalizeCode(decodeURIComponent(m[1])); } catch (e) { code = null; }
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  if (!code || !canShare()) return;
+  if (share && share.code === code) { showStatus('This phone is already on that board', null, null, 2600); return; }
+  openShareDlg('join', code);
 }
 
 // ---------- wiring ----------
@@ -1077,7 +1349,7 @@ function wire() {
   $('moreBtn').addEventListener('click', openSheet);
   $('sheetClose').addEventListener('click', closeSheets);
   $('textClose').addEventListener('click', closeSheets);
-  for (const id of ['sheet', 'textDlg']) $(id).addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  for (const id of ['sheet', 'textDlg', 'shareDlg']) $(id).addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
   $('backupBtn').addEventListener('click', doBackup);
   $('copyBtn').addEventListener('click', () => openText('copy'));
   $('pasteBtn').addEventListener('click', () => openText('paste'));
@@ -1091,6 +1363,21 @@ function wire() {
   $('installBtn').addEventListener('click', doInstall);
   $('clearBtn').addEventListener('click', clearBoard);
   $('textGo').addEventListener('click', textGo);
+  $('syncDot').addEventListener('click', openSheet);
+  $('shareBtn').addEventListener('click', startSharing);
+  $('joinBtn').addEventListener('click', () => openShareDlg('join'));
+  $('showCodeBtn').addEventListener('click', () => openShareDlg('show'));
+  $('stopShareBtn').addEventListener('click', stopSharing);
+  $('shareClose').addEventListener('click', closeSheets);
+  $('sendCodeBtn').addEventListener('click', sendCode);
+  $('copyCodeBtn').addEventListener('click', () => copyText(share ? share.code : '', 'Code copied'));
+  $('copyLinkBtn').addEventListener('click', () => copyText(shareLink(), 'Link copied'));
+  $('joinGoBtn').addEventListener('click', () => joinSharing($('codeInput').value));
+  $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') joinSharing($('codeInput').value); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && sync) sync.resume(); });
+  window.addEventListener('online', () => { if (sync) sync.resume(); });
+  window.addEventListener('hashchange', handleJoinLink);   // a #join= link tapped while PokoPal is already open in this tab
+  setInterval(() => { if ($('sheet').open) { renderSync(); renderAbout(); } }, 5000);
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; updateInstallRow(); });
   window.addEventListener('appinstalled', () => { installPrompt = null; updateInstallRow(); showStatus('PokoPal is on your home screen', null, null, 3000); });
 }
@@ -1106,9 +1393,15 @@ function wire() {
     wire();
     setView(state.view);
     refresh();
+    syncConf = data.sync || null;
+    loadShare();
+    renderSync();
     renderAbout();
     registerSW();
-    window.PokoPal = { backup: backupText, restore: restoreFromText, placements: () => ({ ...state.placements }) };
+    if (share) startSync(false);
+    handleJoinLink();
+    window.PokoPal = { backup: backupText, restore: restoreFromText, placements: () => ({ ...state.placements }),
+                       share: () => (share ? share.code : null), sync: () => (sync ? sync.status : null) };
   } catch (err) {
     document.body.insertAdjacentHTML('afterbegin',
       `<div style="margin:12px;padding:12px;border-radius:12px;background:#FDE7E7;color:#7A1F1F;font-weight:600">The data files could not be loaded (${err && err.message ? err.message : err}). Open this page through a web server or the packaged single file.</div>`);

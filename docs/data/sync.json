@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "note": "Where the shared board travels (phase 3, September 6, 2026). Public Nostr relays: free, no account, each keeps the latest sealed copy of a board per room, and only the phones holding the room code can open it. The phones post to every relay here and read from every one, so any of them can vanish without anyone noticing. To change the list, edit `relays` and publish: nothing in the app names a relay. Check candidates first with `node tools/probe_relays.mjs` (on September 6, 2026, 12 of 20 passed; these are the five best-known of them). `kind` and `tag` name the event the board is stored as (NIP-78 application data). Changing `tag` starts every room from a blank shared copy, so leave it alone.",
+  "relays": [
+    "wss://relay.damus.io",
+    "wss://nos.lol",
+    "wss://relay.primal.net",
+    "wss://nostr.mom",
+    "wss://offchain.pub"
+  ],
+  "kind": 30078,
+  "tag": "pokopal:board:v1",
+  "probed": "2026-09-06"
+}
