@@ -24,6 +24,7 @@ def main():
     html = (DOCS / "index.html").read_text(encoding="utf-8")
     towns = json.loads((DOCS / "data" / "towns.json").read_text(encoding="utf-8"))
     pokemon = json.loads((DOCS / "data" / "pokemon.json").read_text(encoding="utf-8"))
+    habitats = json.loads((DOCS / "data" / "habitats.json").read_text(encoding="utf-8"))
     auth = json.loads((DOCS / "data" / "auth.json").read_text(encoding="utf-8"))
 
     cache = {}
@@ -32,11 +33,11 @@ def main():
         if path not in cache:
             cache[path] = "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode("ascii")
         p["sprite"] = cache[path]
-        # trim fields the board does not use, to keep the file small
-        for k in ("habitats", "howObtained", "url", "favorites", "specialties", "mood", "areas", "classification", "underwater"):
+        # trim the two fields nothing on the board or the Pokémon sheet reads, to keep the file small
+        for k in ("areas", "underwater"):
             p.pop(k, None)
 
-    payload = json.dumps({"towns": towns["towns"], "pokemon": pokemon["pokemon"],
+    payload = json.dumps({"towns": towns["towns"], "pokemon": pokemon["pokemon"], "habitats": habitats["habitats"],
                           "auth": {k: auth[k] for k in ("sdk", "sdkBase", "firebase") if k in auth}}, ensure_ascii=False, separators=(",", ":"))
     payload = payload.replace("</", "<\\/")
     inject = f"<script>window.POKOPIA_DATA={payload};</script>"

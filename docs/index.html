@@ -216,7 +216,6 @@
   }
   .card .name { overflow: hidden; text-overflow: ellipsis; padding-bottom: 3px; }
   .card em { font-style: normal; font-weight: 600; font-size: 11px; opacity: 0.85; margin-left: 4px; }
-  .card.selected { outline: 3px solid var(--accent); outline-offset: 2px; transform: scale(1.04); }
   .card.lifting { opacity: 0.3; }
   .card.ghost {
     position: fixed; left: 0; top: 0; z-index: 100;
@@ -420,6 +419,49 @@
   .nudge { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
   .nudge .sub { padding: 2px 0; font-size: 13px; }
 
+  /* ---------- the Pokémon sheet (phase 4, September 7, 2026: tap a card, see what it needs) ---------- */
+  .poke-head { display: flex; align-items: center; gap: 12px; padding: 2px 2px 0; }
+  .poke-img {
+    flex: none; width: 96px; height: 96px; border-radius: 20px;
+    background: var(--c1); box-shadow: inset 0 -6px 0 var(--c2);
+    image-rendering: pixelated; -webkit-user-drag: none;
+  }
+  .poke-title { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+  .poke-name { font-family: var(--display); font-weight: 600; font-size: 22px; line-height: 1.1; overflow-wrap: anywhere; }
+  .poke-name em { font-style: normal; font-weight: 500; font-size: 15px; color: var(--ink-2); margin-left: 6px; }
+  .poke-sub { font-size: 13px; color: var(--ink-2); }
+  .poke-types { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tpill { padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+  .poke-sec { display: flex; flex-direction: column; gap: 6px; }
+  .poke-lbl { font-family: var(--display); font-weight: 600; font-size: 15px; }
+  .poke-lbl small { font-family: var(--font); font-weight: 500; font-size: 12px; color: var(--muted); margin-left: 6px; }
+  .poke-towns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ptown {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 36px; padding: 0 11px; border-radius: 11px;
+    border: 2px solid var(--town, var(--line)); background: var(--town-soft, var(--surface-2)); color: var(--ink);
+    font-family: var(--display); font-weight: 600; font-size: 13px; cursor: pointer;
+  }
+  .ptown.here { background: var(--town, var(--accent)); border-color: var(--town, var(--accent)); color: #fff; }
+  .ptown:active { filter: brightness(0.94); }
+  .hab { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
+  .hab-head { display: flex; align-items: baseline; gap: 8px; }
+  .hab-head b { font-size: 15px; }
+  .rar { margin-left: auto; flex: none; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: var(--line); color: var(--ink-2); white-space: nowrap; }
+  .rar-rare { background: var(--accent-soft); color: var(--accent); }
+  .rar-very-rare { background: var(--accent); color: var(--ground); }
+  .hab-mats { display: flex; flex-wrap: wrap; gap: 5px; }
+  .mat { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; }
+  .mat b { color: var(--accent); }
+  .hab-when { font-size: 12px; color: var(--ink-2); line-height: 1.4; }
+  .hab-desc { font-size: 12px; color: var(--muted); line-height: 1.35; }
+  .poke-note { margin: 0; font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+  .poke-facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; font-size: 13px; }
+  .poke-facts dt { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .poke-facts dd { margin: 0; }
+  .poke-src { font-size: 12px; color: var(--muted); }
+  .poke-src a { color: var(--accent); font-weight: 700; text-decoration: none; }
+
   /* ---------- wide layout ---------- */
   @media (min-width: 860px) {
     .top { padding: 12px 14px 8px; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
@@ -477,7 +519,7 @@
 <main class="board" id="board">
   <section class="pane bank" id="bank" data-target="bank">
     <div class="pane-head"><span>Not placed yet</span><span class="count" id="bankCount">0</span></div>
-    <div class="firstrun" id="firstrun" hidden>Press and hold a Pokémon, then drag it onto the town it lives in. Or tap it, then tap the town.</div>
+    <div class="firstrun" id="firstrun" hidden>Press and hold a Pokémon, then drag it onto the town it lives in. Tap it to see what it needs.</div>
     <div class="firstrun nudge" id="nudge" hidden><span>Save your board to an account and share it with another phone.</span><button class="sub" id="nudgeBtn" type="button">Create an account</button><button class="sub" id="nudgeNo" type="button">Not now</button></div>
     <div class="cards" id="bankCards"></div>
     <div class="empty" id="bankEmpty" hidden></div>
@@ -553,6 +595,11 @@
   </div>
 </dialog>
 
+<dialog class="sheet" id="cardDlg" aria-label="Pokémon">
+  <div class="sheet-head"><span id="cardTitle">Pokémon</span><button class="x" id="cardClose" type="button" aria-label="Close">×</button></div>
+  <div class="sheet-body" id="cardBody"></div>
+</dialog>
+
 <!--#data-->
 <script src="cloud.js"></script>
 <script>
@@ -594,7 +641,6 @@ const TOWN_EL = new Map();      // townId -> .town element
 const TILE = new Map();         // 'bank' | townId -> tile element
 let state = { placements: {}, stamps: {}, folded: {}, view: 'bank', placedOnce: false, cloud: { uid: null } };   // stamps: id -> ms of its last move; cloud.uid: whose account this phone's board belongs to (phase 3)
 let filter = { q: '', type: '' };
-let selected = null;
 let lastMove = null;
 
 const $ = id => document.getElementById(id);
@@ -632,12 +678,13 @@ function save() {
 // ---------- data ----------
 async function loadData() {
   if (window.POKOPIA_DATA) return window.POKOPIA_DATA;
-  const [t, p, s] = await Promise.all([
+  const [t, p, h, s] = await Promise.all([
     fetch('data/towns.json').then(r => r.json()),
     fetch('data/pokemon.json').then(r => r.json()),
+    fetch('data/habitats.json').then(r => (r.ok ? r.json() : null)).catch(() => null),   // optional: without it the sheet names habitats but cannot list materials
     fetch('data/auth.json').then(r => (r.ok ? r.json() : null)).catch(() => null),   // optional: without it, accounts are off
   ]);
-  return { towns: t.towns, pokemon: p.pokemon, auth: s };
+  return { towns: t.towns, pokemon: p.pokemon, habitats: h ? h.habitats : [], auth: s };
 }
 
 // ---------- building the board ----------
@@ -693,6 +740,7 @@ function buildCards(pokemon) {
   const bank = $('bankCards');
   list.forEach((p, i) => {
     POKE.set(p.id, p);
+    for (const h of p.habitats || []) noteVocab(h);
     const c1 = TYPE[p.types[0]] || FALLBACK_TYPE;
     const c2 = p.types[1] ? (TYPE[p.types[1]] || FALLBACK_TYPE) : c1;
     const card = el('div', 'card');
@@ -838,21 +886,123 @@ function showStatus(text, btnLabel, onBtn, ms) {
 }
 function hideStatus() { clearTimeout(statusTimer); $('status').hidden = true; }
 
-// ---------- selection (tap fallback) ----------
-function select(id) {
-  if (selected) CARD.get(selected)?.classList.remove('selected');
-  selected = id;
-  if (id) {
-    CARD.get(id).classList.add('selected');
-    showStatus(`Now tap a town for ${nameOf(id)}`, 'Cancel', () => select(null));
-  } else hideStatus();
+// ---------- the Pokémon sheet (phase 4, September 7, 2026): tap a card, see what it needs ----------
+// Every line on it is read from the data files: pokemon.json (the habitats that bring a Pokémon, each with rarity,
+// time of day, weather and the towns it works in; ideal habitat, favourites, specialty, how it is obtained) and
+// habitats.json (each habitat's materials and description). Nothing is written per Pokémon here, so a roster refresh
+// needs no code change. The sheet also carries the towns as buttons: the tap alternative to dragging a card.
+const HAB = new Map();                      // habitat name, lower-cased -> catalogue record (materials, description)
+const VOCAB = { time: [], weather: [] };    // every time-of-day and weather value the data uses, in first-seen order
+function buildHabitats(list) { for (const h of list || []) if (h && h.name) HAB.set(String(h.name).toLowerCase(), h); }
+function noteVocab(h) {
+  for (const x of h.time || []) if (!VOCAB.time.includes(x)) VOCAB.time.push(x);
+  for (const x of h.weather || []) if (!VOCAB.weather.includes(x)) VOCAB.weather.push(x);
 }
-function dropSelectedOn(target) {
-  if (!selected) return false;
-  const id = selected;
-  select(null);
-  place(id, target === 'bank' ? null : target);
-  return true;
+const words = items => items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+const sentence = t => String(t || '').replace(/\s+/g, ' ').trim().replace(/^[a-z]/, c => c.toUpperCase()).replace(/([^.!?])$/, '$1.');
+function spanText(list, all, noun) {   // ['Night'] -> 'Night only'; the whole vocabulary -> 'Any time'
+  if (!list.length || all.every(x => list.includes(x))) return `Any ${noun}`;
+  return list.length === 1 ? `${list[0]} only` : words(list);
+}
+function townsText(names) {            // the towns a habitat works in, against the town list
+  const set = new Set(names || []);
+  const here = TOWNS.filter(t => set.has(t.name) || (t.aliases || []).some(a => set.has(a)));
+  if (!here.length) return set.size ? words([...set]) : 'Any town';
+  if (here.length === TOWNS.length) return 'Any town';
+  if (here.length === TOWNS.length - 1) return `Any town but ${TOWNS.find(t => !here.includes(t)).name}`;
+  return here.length === 1 ? `${here[0].name} only` : words(here.map(t => t.name));
+}
+function obtainNote(p) {               // the part of "how obtained" that is not the habitat list: DLC, event, story NPC, legendary
+  const s = String(p.howObtained || '');
+  const i = s.search(/befriend by building habitat/i);
+  return (i < 0 ? s : s.slice(0, i)).replace(/[\s;:,.]+$/, '').trim();
+}
+function habitatCard(h) {
+  const cat = HAB.get(String(h.name || '').toLowerCase());
+  const box = el('div', 'hab');
+  const head = el('div', 'hab-head');
+  head.append(el('b', null, (cat && cat.name) || h.name || 'Habitat'));
+  const r = String(h.rarity || '');
+  if (r && !/unknown/i.test(r)) head.append(el('span', 'rar rar-' + r.toLowerCase().replace(/[^a-z]+/g, '-'), r));
+  box.append(head);
+  if (cat && cat.materials && cat.materials.length) {
+    const mats = el('div', 'hab-mats');
+    for (const m of cat.materials) { const s = el('span', 'mat'); s.append(el('b', null, `${m.qty || 1}×`), ` ${m.name}`); mats.append(s); }
+    box.append(mats);
+  } else if (!cat) box.append(el('div', 'hab-desc', 'Not in the habitat catalogue yet.'));
+  box.append(el('div', 'hab-when', [`⏰ ${spanText(h.time || [], VOCAB.time, 'time')}`, `☀️ ${spanText(h.weather || [], VOCAB.weather, 'weather')}`, `📍 ${townsText(h.towns)}`].join(' · ')));
+  if (cat && cat.description) box.append(el('div', 'hab-desc', sentence(cat.description)));
+  return box;
+}
+function openCard(id) {
+  const p = POKE.get(id); if (!p) return;
+  const dlg = $('cardDlg'), body = $('cardBody');
+  const label = p.displayName || p.name;
+  $('cardTitle').textContent = label + (p.formTag ? ` (${p.formTag})` : '');
+  dlg.setAttribute('aria-label', label);
+  body.replaceChildren();
+
+  const c1 = TYPE[p.types[0]] || FALLBACK_TYPE, c2 = p.types[1] ? (TYPE[p.types[1]] || FALLBACK_TYPE) : c1;
+  const head = el('div', 'poke-head');
+  const img = el('img', 'poke-img');
+  img.src = p.sprite; img.alt = ''; img.width = 96; img.height = 96; img.draggable = false;
+  img.style.setProperty('--c1', alpha(c1, 0.38)); img.style.setProperty('--c2', alpha(c2, 0.55));
+  const title = el('div', 'poke-title');
+  const name = el('div', 'poke-name', label);
+  if (p.formTag) name.append(el('em', null, p.formTag));
+  const types = el('div', 'poke-types');
+  for (const t of p.types) { const s = el('span', 'tpill', t); const c = TYPE[t] || FALLBACK_TYPE; s.style.background = c; s.style.color = inkFor(c); types.append(s); }
+  title.append(name, el('div', 'poke-sub', [p.aka, p.classification, p.dex].filter(Boolean).join(' · ')), types);
+  head.append(img, title);
+  body.append(head);
+
+  // Where it lives on the board, and the towns to send it to.
+  const cur = TOWN.has(state.placements[id]) ? state.placements[id] : null;
+  const where = el('section', 'poke-sec');
+  const lbl = el('div', 'poke-lbl', cur ? `Lives in ${TOWN.get(cur).name}` : 'Not placed yet');
+  lbl.append(el('small', null, cur ? 'Tap another town to move it' : 'Tap the town it lives in'));
+  const towns = el('div', 'poke-towns');
+  const townBtn = (target, text, color) => {
+    const b = el('button', 'ptown', text);
+    b.type = 'button';
+    if (color) { b.style.setProperty('--town', color); b.style.setProperty('--town-soft', alpha(color, 0.12)); }
+    if (target === cur) b.classList.add('here');
+    b.addEventListener('click', () => { closeSheets(); place(id, target); });
+    return b;
+  };
+  towns.append(townBtn(null, '🎒 Not placed', ''));
+  for (const t of TOWNS) towns.append(townBtn(t.id, `${t.emoji || '🏠'} ${t.short || t.name}`, t.color || '#7E4FAD'));
+  where.append(lbl, towns);
+  body.append(where);
+
+  // What it needs: the habitats that bring it, each with materials, rarity, time, weather and towns.
+  const habs = p.habitats || [];
+  const needs = el('section', 'poke-sec');
+  const nl = el('div', 'poke-lbl', habs.length ? 'What it needs' : 'How to get it');
+  if (habs.length) nl.append(el('small', null, habs.length === 1 ? 'Build this and it turns up' : 'Build any one of these and it turns up'));
+  needs.append(nl);
+  const note = obtainNote(p);
+  if (note) needs.append(el('p', 'poke-note', sentence(note)));
+  for (const h of habs) needs.append(habitatCard(h));
+  if (!habs.length && !note) needs.append(el('p', 'poke-note', 'Nothing is written down for this one yet.'));
+  body.append(needs);
+
+  // Its Pokédex page: ideal habitat, favourites, specialty.
+  const facts = el('dl', 'poke-facts');
+  const fact = (k, v) => { if (v) facts.append(el('dt', null, k), el('dd', null, v)); };
+  fact('Ideal habitat', p.mood);
+  fact('Favorites', (p.favorites || []).join(', '));
+  fact('Specialty', (p.specialties || []).join(', '));
+  if (facts.children.length) { const s = el('section', 'poke-sec'); s.append(el('div', 'poke-lbl', 'Pokédex'), facts); body.append(s); }
+
+  if (p.url) {
+    const src = el('div', 'poke-src', 'More on ');
+    const a = el('a', null, 'Serebii ↗'); a.href = p.url; a.target = '_blank'; a.rel = 'noopener';
+    src.append(a);
+    body.append(src);
+  }
+  showDialog(dlg);
+  dlg.scrollTop = 0;
 }
 
 // ---------- drag and drop (pointer events; press-and-hold on touch) ----------
@@ -882,7 +1032,6 @@ function startDrag() {
   document.body.append(ghost);
   drag.card.classList.add('lifting');
   document.body.classList.add('dragging');
-  if (selected) select(null);
   if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
   moveGhost();
   updateOver();
@@ -957,10 +1106,7 @@ function abandonDrag() {
   if (drag.started) finishDrag(false);
   else { clearTimeout(drag.timer); drag = null; }
 }
-function onCardTap(card) {
-  const id = card.dataset.id;
-  select(selected === id ? null : id);
-}
+function onCardTap(card) { openCard(card.dataset.id); }
 
 // ---------- back up, restore, install, offline (phase 2) ----------
 const APP = 'PokoPal';
@@ -1062,7 +1208,7 @@ function clearBoard() {
 
 function showDialog(d) { if (d.open) return; if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
 function openSheet() { updateInstallRow(); renderAccount(); renderAbout(); showDialog($('sheet')); }
-function closeSheets() { for (const id of ['sheet', 'textDlg', 'shareDlg', 'authDlg']) { const d = $(id); if (d.open) d.close(); } }
+function closeSheets() { for (const id of ['sheet', 'textDlg', 'shareDlg', 'authDlg', 'cardDlg']) { const d = $(id); if (d.open) d.close(); } }
 function openText(mode) {
   textMode = mode;
   const ta = $('textArea');
@@ -1406,26 +1552,18 @@ function wire() {
   document.addEventListener('touchmove', e => { if (drag && drag.started && e.cancelable) e.preventDefault(); }, { passive: false });
   document.addEventListener('contextmenu', e => { if (e.target.closest('.card')) e.preventDefault(); });
   document.addEventListener('dragstart', e => e.preventDefault());
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { abandonDrag(); select(null); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') abandonDrag(); });
   window.addEventListener('blur', abandonDrag);
   document.addEventListener('visibilitychange', () => { if (document.hidden) abandonDrag(); });
 
   $('dock').addEventListener('click', e => {
     const tile = e.target.closest('.tile'); if (!tile) return;
-    const target = tile.dataset.target;
-    if (dropSelectedOn(target)) return;
-    setView(target);
+    setView(tile.dataset.target);
   });
   $('towns').addEventListener('click', e => {
     if (e.target.closest('.card')) return;
     const box = e.target.closest('.town'); if (!box) return;
-    const target = box.dataset.target;
-    if (dropSelectedOn(target)) return;
-    if (e.target.closest('.town-head') && isWide()) toggleFold(target);
-  });
-  $('bank').addEventListener('click', e => {
-    if (e.target.closest('.card')) return;
-    dropSelectedOn('bank');
+    if (e.target.closest('.town-head') && isWide()) toggleFold(box.dataset.target);
   });
 
   const q = $('q');
@@ -1441,7 +1579,8 @@ function wire() {
   $('moreBtn').addEventListener('click', openSheet);
   $('sheetClose').addEventListener('click', closeSheets);
   $('textClose').addEventListener('click', closeSheets);
-  for (const id of ['sheet', 'textDlg', 'shareDlg', 'authDlg']) $(id).addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  for (const id of ['sheet', 'textDlg', 'shareDlg', 'authDlg', 'cardDlg']) $(id).addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  $('cardClose').addEventListener('click', closeSheets);
   $('backupBtn').addEventListener('click', doBackup);
   $('copyBtn').addEventListener('click', () => openText('copy'));
   $('pasteBtn').addEventListener('click', () => openText('paste'));
@@ -1489,6 +1628,7 @@ function wire() {
   try {
     const data = await loadData();
     buildTowns(data.towns);
+    buildHabitats(data.habitats);
     buildChips();
     buildCards(data.pokemon);
     wire();
@@ -1501,7 +1641,7 @@ function wire() {
     startCloud();
     if (!accountsReady()) handleJoinLink();   // with accounts, the link waits until the sign-in state is known
     window.PokoPal = { backup: backupText, restore: restoreFromText, placements: () => ({ ...state.placements }),
-                       account: () => (cloud ? cloud.status : null), join: doJoin };
+                       account: () => (cloud ? cloud.status : null), join: doJoin, open: openCard };
   } catch (err) {
     document.body.insertAdjacentHTML('afterbegin',
       `<div style="margin:12px;padding:12px;border-radius:12px;background:#FDE7E7;color:#7A1F1F;font-weight:600">The data files could not be loaded (${err && err.message ? err.message : err}). Open this page through a web server or the packaged single file.</div>`);

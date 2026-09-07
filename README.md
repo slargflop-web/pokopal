@@ -1,6 +1,6 @@
 # Pokopia Tracker App
 
-**PokoPal** (named September 6, 2026; the working name was Pokopia Homes): a drag-and-drop tracker for which Pokémon lives in which town in Andrea's Pokémon Pokopia save (Nintendo Switch 2). Phases 0, 1, 2 and 3 of `PLAN.md` are built (September 6, 2026).
+**PokoPal** (named September 6, 2026; the working name was Pokopia Homes): a drag-and-drop tracker for which Pokémon lives in which town in Andrea's Pokémon Pokopia save (Nintendo Switch 2). Phases 0 to 3 of `PLAN.md` were built on September 6, 2026; phase 4's first pain point, the Pokémon sheet, on September 7, 2026.
 
 ## Run it
 
@@ -12,11 +12,11 @@
 
 | Path | What |
 |---|---|
-| `docs/index.html` | The app: plain HTML/CSS/JS, no framework. Loads `cloud.js` and the data files below at start (or `window.POKOPIA_DATA` when packaged). |
+| `docs/index.html` | The app: plain HTML/CSS/JS, no framework. Loads `cloud.js` and the data files below at start (or `window.POKOPIA_DATA` when packaged). Since phase 4 (September 7, 2026) a tap on a card opens the Pokémon sheet: what it needs, and the towns as buttons. |
 | `docs/cloud.js` | The accounts engine (phase 3, September 6, 2026): loads the Firebase SDK from Google's CDN after the board has drawn, signs in with email and password, opens the account's board document, applies the last-change-wins merge, saves changed placements, and handles invite codes, joining and leaving. Plain script exposing `window.PokoCloud`; its pure parts load in Node for `tools/test_cloud.mjs`. Knows nothing about Pokémon or towns. *(The morning's relay engine, `sync.js`, is in git history at bbd8737.)* |
 | `docs/data/towns.json` | The six towns, in order, with colours, emoji, unlock notes and source-spelling aliases. **Adding the 2027 town is one more object here.** |
 | `docs/data/pokemon.json` | 367 cards: 357 Pokédex entries (300 main + 50 Bubbly Basin + 7 event) plus 10 flagged alternate forms. One record per line. `id` is the key placements are saved under: never rename one. |
-| `docs/data/habitats.json` | The 252-habitat catalogue (materials, descriptions), referenced from `pokemon.json` by name. Not used by the board yet; ready for the "what does it need" feature. |
+| `docs/data/habitats.json` | The 252-habitat catalogue (materials, descriptions), referenced from `pokemon.json` by name. Read by the Pokémon sheet (phase 4, September 7, 2026), which shows each habitat's materials and description. |
 | `docs/data/auth.json` | The Firebase web-app config (public by design; the rules do the protecting) and the SDK version to load. Written by `tools/setup_firebase.sh` on September 6, 2026: project `pokopal`. While `firebase` is null the app says accounts are not set up yet and works signed out. |
 | `firestore.rules`, `firebase.json`, `.firebaserc` | The database rules (who may read, edit, join or leave a board), the deploy config, and the project id. Deployed by the setup script. |
 | `docs/sprites/` | 364 PokéAPI sprites, vendored so the app has no live dependency. |
@@ -24,8 +24,8 @@
 | `docs/manifest.json` | The web app manifest: name PokoPal, the icons above, standalone display, `start_url` and `scope` relative so it works under any host path. |
 | `docs/sw.js` | The service worker (September 6, 2026). Caches the page, `cloud.js`, the manifest, the data files and the Firebase SDK files, then pulls every sprite named in `pokemon.json` into the cache in the background, so the whole roster works offline. Page and data are served from cache and refreshed behind the scenes; sprites and fonts are cache-first. `VERSION` at the top is stamped by `tools/publish.sh`; a new version makes open pages show "PokoPal has an update, Reload". Nothing in it lists Pokémon or towns. |
 | `docs/plan.html` | The plan as a page. |
-| `tools/build_data.py` | Rebuilds `pokemon.json` and `habitats.json` from `research/`. Exits non-zero if any count, id, type, sprite or place name is off. |
-| `tools/build_single_file.py` | Packages `docs/` into `dist/PokoPal.html` (open anywhere) and `dist/artifact.html` (for a Claude page). The icons, `cloud.js` and the auth config are inlined too; the Firebase SDK still comes from the network. |
+| `tools/build_data.py` | Rebuilds `pokemon.json` and `habitats.json` from `research/`. Exits non-zero if any count, id, type, sprite or place name is off, or if a card names a habitat the catalogue lacks. |
+| `tools/build_single_file.py` | Packages `docs/` into `dist/PokoPal.html` (open anywhere) and `dist/artifact.html` (for a Claude page). The habitat catalogue, the icons, `cloud.js` and the auth config are inlined too; the Firebase SDK still comes from the network. |
 | `tools/build_icons.py` | Regenerates every icon size from `docs/icons/pokopal.png`; `--source FILE` rebuilds the master from a new drawing first. |
 | `tools/publish.sh` | Publishes to GitHub Pages: stamps `docs/sw.js`, rebuilds `dist/`, commits, creates the repo and enables Pages on first run, pushes on later runs, prints the address. Needs `gh auth login` once. |
 | `tools/setup_firebase.sh` | Sets up the accounts backend end to end after one `npx firebase-tools login`: finds or creates the Firebase project, the web app and the Firestore database, deploys the rules, switches on email sign-in, writes `docs/data/auth.json`, runs the smoke test; `--publish` then ships. Safe to run again. Prints the exact console click if Google insists on one. The work is in `tools/firebase_setup.mjs`. Run on September 6, 2026 against project `pokopal`. Two steps are console-only on the free plan and are done: accepting Google Cloud's terms (the project was created in the Firebase console) and Authentication → Get started (the free plan has no API for it); the script names the exact click and stops if either is ever missing again. |
@@ -37,7 +37,8 @@
 
 ## How the board works
 
-- **Bank** ("Not placed yet") holds every card; **towns** hold residents. Press and hold a card, drag it onto a town; drag it back to the bank to unassign. Or tap a card, then tap a town.
+- **Bank** ("Not placed yet") holds every card; **towns** hold residents. Press and hold a card, drag it onto a town; drag it back to the bank to unassign. Or tap a card and pick a town on its sheet.
+- **The Pokémon sheet** (phase 4, September 7, 2026): tap a card. It shows the sprite, the types and the Pokédex line; where it lives, with every town as a button (tap one to move it, Undo offered); **What it needs**, each habitat that brings it, with the materials from `habitats.json`, rarity, time of day, weather and the towns the habitat works in (legendaries and the player's Ditto get how they are obtained instead); its Pokédex facts (ideal habitat, favorites, specialty); and a Serebii link. Every line is read from the data files, so a roster refresh needs no code change. The old tap-then-tap-a-town selection mode is gone; the sheet's town buttons replace it.
 - Phone layout: the bank (or one town's residents) on top, a dock of seven drop tiles at the bottom. Tap a tile to see who lives there. Wide screens show the bank and all six town boxes at once.
 - Cards are coloured by type (second type as the bottom band). Search matches name, form, nickname (Smearguru, Chef Dente, DJ Rotom, Tinkmaster), type and dex number. Type chips filter.
 - Every drop saves instantly in the browser's storage on that device (`localStorage`, key `pokopal:v1`; a board saved under the pre-rename key `pokopia-homes:v1` is read once and carried over). Since phase 3 every move also carries a time stamp (`stamps` in the same record), which is what lets two phones combine, and `cloud.uid` records whose account the board belongs to. Undo appears after each move.
@@ -54,4 +55,4 @@
 
 ## Next
 
-Phase 3 is built and its backend is live (September 6, 2026: the glass test passed in the morning, the afternoon rebuilt sharing on real accounts, and the evening set up the Firebase project `pokopal`, owned by Taylor's Google account; the smoke test and a real-UI test of sign-up, a move, a share code, sign-out and sign-in all passed). What is left is by hand on each phone: ⋯ → Sign in or create an account; Taylor taps Share this board and sends the code; Andrea taps Have a code? Join a board. Adding a user later: they create an account in the app; the Firebase console (Authentication) lists everyone. Then Phase 4 in `PLAN.md`: the next pain point Andrea names.
+Phase 3 is built and its backend is live (September 6, 2026: the glass test passed in the morning, the afternoon rebuilt sharing on real accounts, and the evening set up the Firebase project `pokopal`, owned by Taylor's Google account; the smoke test and a real-UI test of sign-up, a move, a share code, sign-out and sign-in all passed). What is left is by hand on each phone: ⋯ → Sign in or create an account; Taylor taps Share this board and sends the code; Andrea taps Have a code? Join a board. Adding a user later: they create an account in the app; the Firebase console (Authentication) lists everyone. Phase 4 (`PLAN.md`) grows the board one pain point at a time. The first, the Pokémon sheet (tap a card, see what it needs), was built and committed September 7, 2026; it goes live when Taylor runs `tools/publish.sh`. Still on the list: befriended checklist, which house, per-town headcount.

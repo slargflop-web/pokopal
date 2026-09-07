@@ -286,6 +286,11 @@ def main():
     hab_names = Counter(norm(h["name"]) for h in habitats)
     if any(c > 1 for c in hab_names.values()):
         errors.append("duplicate habitat names in catalogue")
+    # The Pokémon sheet (phase 4) looks each card's habitats up in the catalogue by name.
+    for p in pokemon:
+        for h in p["habitats"]:
+            if norm(h["name"]) not in hab_names:
+                errors.append(f"{p['name']} needs habitat {h['name']!r}, which is not in the catalogue")
 
     for w in warnings:
         print("note:", w)
