@@ -3,3 +3,7 @@ dist/
 __pycache__/
 # third-party dataset copies (no licence stated): kept on this Mac, not published
 research/sources/
+
+# the Firebase CLI writes this into the folder it runs from whenever a command fails
+firebase-debug.log
+firebase-debug.*.log

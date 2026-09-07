@@ -13,8 +13,9 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL('..', import.meta.url));   // fileURLToPath, not .pathname: this folder's name has a space, which .pathname leaves as %20
 const args = process.argv.slice(2);
 const flag = n => args.includes(n);
 const opt = n => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : null; };
@@ -86,8 +87,15 @@ if (!projectId) {
   say(`   creating project ${id}…`);
   const made = fb(['projects:create', id, '--display-name', 'PokoPal'], { allowFail: true });
   if (made && made.__error) {
-    const m = String(made.__error);
-    if (/terms of service|tos|accept/i.test(m)) die(`Google wants this account to accept its Cloud terms once before a project can be created from the command line.\nOpen https://console.firebase.google.com/ , click "Create a project", name it PokoPal, finish the wizard (Analytics can stay off), then run tools/setup_firebase.sh again: it will find the project and continue.\n\nDetail: ${m}`, 3);
+    let m = String(made.__error);
+    // The CLI's own message is generic ("See firebase-debug.log for more info"); the real reason is the last error in that log.
+    const logPath = join(ROOT, 'firebase-debug.log');
+    if (/firebase-debug\.log/i.test(m) && existsSync(logPath)) {
+      const found = readFileSync(logPath, 'utf8').match(/"message":"([^"]*)"/g);
+      if (found && found.length) m += '\n' + found[found.length - 1].replace(/^"message":"|"$/g, '');
+    }
+    const who = accounts.map(a => a.user && a.user.email).filter(Boolean).join(', ') || 'this account';
+    if (/terms of service|\bTOS\b/i.test(m)) die(`Google wants ${who} to accept its Cloud terms once before a project can be created from the command line.\nOpen https://console.firebase.google.com/ , click "Create a project", name it PokoPal, tick the terms box, finish the wizard (Gemini and Analytics can stay off), then run tools/setup_firebase.sh again: it will find the project and continue.\n\nDetail: ${m}`, 3);
     die(`Could not create the project:\n${m}\n\nCreate one by hand at https://console.firebase.google.com/ (name: PokoPal), then run tools/setup_firebase.sh again.`, 3);
   }
   projectId = (made && made.projectId) || id;
@@ -149,7 +157,9 @@ if (token) {
   const base = `https://identitytoolkit.googleapis.com/admin/v2/projects/${projectId}/config`;
   let r = await gapi('PATCH', `${base}?updateMask=signIn.email.enabled,signIn.email.passwordRequired,authorizedDomains`,
     { signIn: { email: { enabled: true, passwordRequired: true } }, authorizedDomains: domains }, token);
-  if (!r.ok && token) {   // a brand-new project sometimes needs Authentication initialised first
+  if (!r.ok && token) {   // a brand-new project needs Authentication initialised first. This call is the paid Identity Platform's
+                          // (BILLING_NOT_ENABLED on the free plan); on the free plan only the console's "Get started" button does it, so
+                          // when it fails the message below hands over exactly that click. Everything after it is scripted again.
     await gapi('POST', `https://identitytoolkit.googleapis.com/v2/projects/${projectId}/identityPlatform:initializeAuth`, {}, token);
     r = await gapi('PATCH', `${base}?updateMask=signIn.email.enabled,signIn.email.passwordRequired,authorizedDomains`,
       { signIn: { email: { enabled: true, passwordRequired: true } }, authorizedDomains: domains }, token);

@@ -17,7 +17,7 @@
 | `docs/data/towns.json` | The six towns, in order, with colours, emoji, unlock notes and source-spelling aliases. **Adding the 2027 town is one more object here.** |
 | `docs/data/pokemon.json` | 367 cards: 357 Pokédex entries (300 main + 50 Bubbly Basin + 7 event) plus 10 flagged alternate forms. One record per line. `id` is the key placements are saved under: never rename one. |
 | `docs/data/habitats.json` | The 252-habitat catalogue (materials, descriptions), referenced from `pokemon.json` by name. Not used by the board yet; ready for the "what does it need" feature. |
-| `docs/data/auth.json` | The Firebase web-app config (public by design; the rules do the protecting) and the SDK version to load. `firebase` is null until `tools/setup_firebase.sh` has run; the app then says accounts are not set up yet and works signed out. |
+| `docs/data/auth.json` | The Firebase web-app config (public by design; the rules do the protecting) and the SDK version to load. Written by `tools/setup_firebase.sh` on September 6, 2026: project `pokopal`. While `firebase` is null the app says accounts are not set up yet and works signed out. |
 | `firestore.rules`, `firebase.json`, `.firebaserc` | The database rules (who may read, edit, join or leave a board), the deploy config, and the project id. Deployed by the setup script. |
 | `docs/sprites/` | 364 PokéAPI sprites, vendored so the app has no live dependency. |
 | `docs/icons/` | The PokoPal icon, Taylor's smiling purple book (September 6, 2026). `pokopal.png` is the 1024-px master on a transparent background. `apple-touch-icon.png` is what an iPhone puts on the home screen; `icon-192.png`, `icon-512.png` and `icon-512-maskable.png` are the manifest's; `favicon-64.png` and `favicon-32.png` are the tab icon; `pokopal-mark.png` is the little mark beside the name in the header. All generated from the master by `tools/build_icons.py`. The original drawing is `research/PokoPal icon original.png`. |
@@ -28,7 +28,7 @@
 | `tools/build_single_file.py` | Packages `docs/` into `dist/PokoPal.html` (open anywhere) and `dist/artifact.html` (for a Claude page). The icons, `cloud.js` and the auth config are inlined too; the Firebase SDK still comes from the network. |
 | `tools/build_icons.py` | Regenerates every icon size from `docs/icons/pokopal.png`; `--source FILE` rebuilds the master from a new drawing first. |
 | `tools/publish.sh` | Publishes to GitHub Pages: stamps `docs/sw.js`, rebuilds `dist/`, commits, creates the repo and enables Pages on first run, pushes on later runs, prints the address. Needs `gh auth login` once. |
-| `tools/setup_firebase.sh` | Sets up the accounts backend end to end after one `npx firebase-tools login`: finds or creates the Firebase project, the web app and the Firestore database, deploys the rules, switches on email sign-in, writes `docs/data/auth.json`, runs the smoke test; `--publish` then ships. Safe to run again. Prints the exact console click if Google insists on one. The work is in `tools/firebase_setup.mjs`. |
+| `tools/setup_firebase.sh` | Sets up the accounts backend end to end after one `npx firebase-tools login`: finds or creates the Firebase project, the web app and the Firestore database, deploys the rules, switches on email sign-in, writes `docs/data/auth.json`, runs the smoke test; `--publish` then ships. Safe to run again. Prints the exact console click if Google insists on one. The work is in `tools/firebase_setup.mjs`. Run on September 6, 2026 against project `pokopal`. Two steps are console-only on the free plan and are done: accepting Google Cloud's terms (the project was created in the Firebase console) and Authentication → Get started (the free plan has no API for it); the script names the exact click and stops if either is ever missing again. |
 | `tools/firebase_smoke.mjs` | Against the real project, with plain REST: two throw-away users create, share and join a board, a third is refused, then everything is deleted. Proves the rules. |
 | `tools/test_cloud.mjs` | `node tools/test_cloud.mjs`: the merge rule, the save diff, invite codes and error wording. Run it before publishing a change to `cloud.js`. |
 | `tools/fake/` | A fake of the slice of Firebase the app uses, for driving the UI in a browser before the real project exists (point `sdkBase` in `auth.json` at it). Never shipped. |
@@ -54,16 +54,4 @@
 
 ## Next
 
-Phase 3 is built (September 6, 2026; the glass test passed the same morning, and the afternoon rebuilt sharing on real accounts). Still to do, once, and only Taylor can start it:
-
-```bash
-npx firebase-tools login
-```
-
-(opens the browser; sign in with the Google account that should own PokoPal), then
-
-```bash
-tools/setup_firebase.sh --publish
-```
-
-which creates the Firebase project, the database, the rules and email sign-in, writes `docs/data/auth.json`, runs the smoke test and publishes. Then on each phone: ⋯ → Sign in or create an account; Taylor taps Share this board and sends the code; Andrea taps Have a code? Join a board. Adding a user later: they create an account in the app; the Firebase console (Authentication) lists everyone. Then Phase 4 in `PLAN.md`: the next pain point Andrea names.
+Phase 3 is built and its backend is live (September 6, 2026: the glass test passed in the morning, the afternoon rebuilt sharing on real accounts, and the evening set up the Firebase project `pokopal`, owned by Taylor's Google account; the smoke test and a real-UI test of sign-up, a move, a share code, sign-out and sign-in all passed). What is left is by hand on each phone: ⋯ → Sign in or create an account; Taylor taps Share this board and sends the code; Andrea taps Have a code? Join a board. Adding a user later: they create an account in the app; the Firebase console (Authentication) lists everyone. Then Phase 4 in `PLAN.md`: the next pain point Andrea names.
